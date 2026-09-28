@@ -129,6 +129,15 @@
     @keyframes ripple { to { transform: scale(1); opacity: 0; } }
 
     /* ---------- [เฉพาะหน้า] หน้าเล่นเกม ---------- */
+
+    /* สีตัวหนังสือแยกตามชนิด (ใช้ทั้งสองเกมและป๊อบอัพสรุปผล) */
+    :root {
+      --c-hanzi:  #1D2B2A;   /* อักษรจีน   : ดำเข้ม */
+      --c-pinyin: #1F6FB5;   /* พินอิน     : น้ำเงิน */
+      --c-thai:   #B4530A;   /* คำอ่านไทย  : ส้มน้ำตาล */
+      --c-mean:   #26705F;   /* ความหมายไทย: เขียว */
+    }
+
     .page-title { font-size: 1.4rem; font-weight: 700; margin: 0; }
     .page-sub   { color: var(--muted); margin: 0; }
 
@@ -229,10 +238,10 @@
     /* เกมตอบคำถาม */
     .q-card { text-align: center; padding: 22px 16px; }
     .q-label { color: var(--muted); font-size: .85rem; margin: 0 0 8px; }
-    .q-hanzi { font-family: 'Noto Serif SC', serif; font-size: 2.8rem; font-weight: 700; line-height: 1.3; margin: 0; word-break: break-word; }
+    .q-hanzi { font-family: 'Noto Serif SC', serif; font-size: 2.8rem; font-weight: 700; line-height: 1.3; margin: 0; word-break: break-word; color: var(--c-hanzi); }
     .q-hanzi.is-sentence { font-size: 1.7rem; }
-    .q-pinyin { color: var(--jade); font-size: 1.1rem; margin: 4px 0 0; word-break: break-word; }
-    .q-thai   { color: var(--muted); margin: 0; word-break: break-word; }
+    .q-pinyin { color: var(--c-pinyin); font-size: 1.1rem; margin: 4px 0 0; word-break: break-word; }
+    .q-thai   { color: var(--c-thai); font-size: 1.05rem; margin: 0; word-break: break-word; }
     .speak-btn {
       margin-top: 14px; display: inline-flex; align-items: center; gap: 6px;
       background: #fff; color: var(--jade); border: 1px solid var(--jade);
@@ -260,7 +269,7 @@
       background: var(--paper); color: var(--muted);
       display: grid; place-items: center; font-size: .9rem; font-weight: 700;
     }
-    .choice-text { flex: 1; min-width: 0; word-break: break-word; }
+    .choice-text { flex: 1; min-width: 0; word-break: break-word; color: var(--c-mean); font-weight: 500; }
     .choice-mark { flex: none; font-size: 1.25rem; opacity: 0; }
     .choice.dim { opacity: .55; }
     .choice.correct { background: #E8F2EF; border-color: var(--jade); animation: pop .3s ease-out; }
@@ -276,11 +285,12 @@
     .board { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .bcol { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
     .mcard {
+      position: relative;
       width: 100%; min-height: 60px; text-align: left;
       display: flex; flex-direction: column; justify-content: center;
       background: #fff; color: var(--ink);
       border: 1.5px solid var(--line); border-radius: 14px; padding: .6rem .8rem;
-      transition: border-color .2s, background .2s, opacity .3s, transform .12s;
+      transition: border-color .2s, background .2s, transform .12s;
     }
     .mcard:hover:not(:disabled) { border-color: var(--jade); }
     .mcard:active:not(:disabled) { transform: scale(.98); }
@@ -288,11 +298,26 @@
     .mcard:disabled { color: var(--ink); cursor: default; }
     .mcard.sel { border-color: var(--jade); background: #E8F2EF; }
     .mcard.bad { border-color: var(--seal); background: #FBECEA; animation: shake .35s; }
-    .mcard.matched { border-color: var(--jade); background: #E8F2EF; opacity: .45; animation: pop .3s ease-out; }
-    .mc-hanzi { font-family: 'Noto Serif SC', serif; font-size: 1.35rem; font-weight: 700; line-height: 1.3; word-break: break-word; }
+    .mc-hanzi { font-family: 'Noto Serif SC', serif; font-size: 1.35rem; font-weight: 700; line-height: 1.3; word-break: break-word; color: var(--c-hanzi); }
     .mcard.is-sentence .mc-hanzi { font-size: 1.05rem; }
-    .mc-pinyin { color: var(--jade); font-size: .85rem; word-break: break-word; }
-    .mc-meaning { word-break: break-word; }
+    .mc-pinyin { color: var(--c-pinyin); font-size: .85rem; word-break: break-word; }
+    .mc-thai   { color: var(--c-thai); font-size: .85rem; word-break: break-word; }
+    .mc-meaning { color: var(--c-mean); font-weight: 500; word-break: break-word; }
+
+    /* จับคู่ถูก: การ์ดเรืองขึ้นเล็กน้อย แล้วหดและจางหายไป (ช่องเดิมยังอยู่ ตำแหน่งการ์ดอื่นไม่ขยับ) */
+    .mcard.matched { pointer-events: none; animation: vanish .6s cubic-bezier(.4, 0, .2, 1) forwards; }
+    .mcard.matched::after {
+      content: ''; position: absolute; inset: -1px; border-radius: 14px;
+      border: 2px solid var(--jade); pointer-events: none;
+      animation: ring .6s ease-out forwards;
+    }
+    .mcard.gone { visibility: hidden; }
+    @keyframes vanish {
+      0%   { transform: scale(1);    opacity: 1; background: #E8F2EF; border-color: var(--jade); box-shadow: 0 0 0 0 rgba(47, 125, 109, .3); }
+      30%  { transform: scale(1.06); opacity: 1; background: #E8F2EF; border-color: var(--jade); box-shadow: 0 0 0 5px rgba(47, 125, 109, .18); }
+      100% { transform: scale(.55) rotate(-3deg); opacity: 0; background: #E8F2EF; border-color: var(--jade); box-shadow: 0 0 0 0 rgba(47, 125, 109, 0); }
+    }
+    @keyframes ring { from { opacity: .7; transform: scale(1); } to { opacity: 0; transform: scale(1.45); } }
 
     /* ป๊อบอัพสรุปผล */
     .modal-content { border: 1px solid var(--line); border-radius: 16px; }
@@ -306,9 +331,10 @@
     .list { display: flex; flex-direction: column; gap: 10px; }
     .miss { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 14px; }
     .min-w-0 { min-width: 0; }
-    .miss-hanzi { font-family: 'Noto Serif SC', serif; font-size: 1.4rem; font-weight: 700; line-height: 1.3; margin: 0; word-break: break-word; }
-    .miss-pinyin { color: var(--jade); font-size: .95rem; margin: 0; word-break: break-word; }
-    .miss-meaning { font-weight: 500; margin: 2px 0 0; word-break: break-word; }
+    .miss-hanzi { font-family: 'Noto Serif SC', serif; font-size: 1.4rem; font-weight: 700; line-height: 1.3; margin: 0; word-break: break-word; color: var(--c-hanzi); }
+    .miss-pinyin { color: var(--c-pinyin); font-size: .95rem; margin: 0; word-break: break-word; }
+    .miss-thai { color: var(--c-thai); font-size: .95rem; margin: 0; word-break: break-word; }
+    .miss-meaning { color: var(--c-mean); font-weight: 500; margin: 2px 0 0; word-break: break-word; }
     .icon-btn {
       width: 40px; height: 40px; border: 0; border-radius: 10px; flex: none;
       background: transparent; color: var(--muted); font-size: 1.2rem;
@@ -422,7 +448,10 @@
     <section id="vMatch" class="d-none">
       <div class="hud">
         <span class="hud-step" id="mStep"></span>
-        <span class="hud-timer" aria-label="เวลาที่ใช้"><i class="bi bi-stopwatch"></i><span id="mTime">0:00</span></span>
+        <span class="hud-timer" id="mHudTimer" aria-label="เวลาที่เหลือ">
+          <i class="bi bi-stopwatch"></i><span><span id="mTimeNum">30</span> วิ</span>
+          <span class="bonus" id="mBonus" aria-hidden="true">+2</span>
+        </span>
         <span class="hud-score" id="mMiss"></span>
       </div>
       <div class="pbar" role="progressbar" aria-label="ความคืบหน้า"><div class="pfill" id="mFill"></div></div>
@@ -539,6 +568,10 @@
       const FLASH_OK_MS = 350;                       // โชว์เฉลยสั้นๆ ก่อนไปข้อต่อไป (ตอบถูก)
       const FLASH_BAD_MS = 800;                      // (ตอบผิด ให้เห็นคำตอบที่ถูกนานขึ้นหน่อย)
 
+      // ตั้งค่าเกมจับคู่
+      const MATCH_START_SEC = 30;                    // เวลาเริ่มต้น (วินาที)
+      const MATCH_BONUS_SEC = 2;                     // จับคู่ถูกได้เวลาเพิ่ม (วินาที)
+
       const read = k => {
         try { const v = JSON.parse(localStorage.getItem(k)); return Array.isArray(v) ? v : []; }
         catch (e) { return []; }
@@ -561,7 +594,6 @@
       const pad = n => String(n).padStart(2, '0');
       const dayKey = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;   // YYYY-MM-DD ตามเวลาเครื่อง
       const fmtTime = s => s < 60 ? `${s} วินาที` : `${Math.floor(s / 60)} นาที ${s % 60} วินาที`;
-      const fmtClock = ms => { const s = Math.floor(ms / 1000); return `${Math.floor(s / 60)}:${pad(s % 60)}`; };
 
       function shuffle(a) {
         for (let i = a.length - 1; i > 0; i--) {
@@ -578,6 +610,13 @@
         u.lang = 'zh-CN';
         u.rate = 0.85;
         speechSynthesis.speak(u);
+      }
+
+      // เล่นแอนิเมชัน "+วินาที" ลอยขึ้นตรงตัวจับเวลา
+      function flashBonus(id, sec) {
+        const b = $(id);
+        b.textContent = '+' + sec;
+        b.classList.remove('show'); void b.offsetWidth; b.classList.add('show');
       }
 
       /* ----- อ่านข้อมูลจากบทเรียน จัดเป็นชุด ----- */
@@ -639,7 +678,10 @@
           const card = el('article', 'card-box miss');
           const left = el('div', 'min-w-0');
           const h = el('p', 'miss-hanzi', it.hanzi); h.lang = 'zh-CN';
-          left.append(h, el('p', 'miss-pinyin', it.pinyin || ''), el('p', 'miss-meaning', it.meaning));
+          left.append(h);
+          if (it.pinyin) left.append(el('p', 'miss-pinyin', it.pinyin));
+          if (it.thaiReading) left.append(el('p', 'miss-thai', it.thaiReading));
+          left.append(el('p', 'miss-meaning', it.meaning));
           card.append(left);
           if (canSpeak) {
             const b = el('button', 'icon-btn');
@@ -669,7 +711,7 @@
         },
         match: {
           glyph: '配', title: 'จับคู่คำศัพท์',
-          desc: 'จับคู่อักษรจีนกับความหมายไทยให้ครบทุกคู่ ให้เร็วและผิดน้อยที่สุด',
+          desc: 'จับคู่อักษรจีนกับความหมายไทยให้ครบทุกคู่ มีเวลานับถอยหลัง จับถูกได้เวลาเพิ่ม',
           countLabel: 'จำนวนคู่', unit: 'คู่', counts: [5, 8, 10], defCount: 5,
           minDistinct: 3,
           need: n => `ต้องมีอย่างน้อย 3 รายการที่ความหมายไม่ซ้ำกัน ตอนนี้มี ${n} รายการ`,
@@ -677,7 +719,7 @@
             const u = distinctOf(pool);
             return u < 3
               ? { text: 'ชุดนี้มีรายการที่ความหมายไม่ซ้ำน้อยกว่า 3 รายการ เล่นเกมนี้ไม่ได้ ลองเลือกชุดอื่น', ok: false }
-              : { text: `จะได้จับคู่ ${Math.min(count, u)} คู่ จากทั้งหมด ${u} รายการ`, ok: true };
+              : { text: `จะได้จับคู่ ${Math.min(count, u)} คู่ จากทั้งหมด ${u} รายการ ตำแหน่งการ์ดสุ่มใหม่ทุกครั้ง\nเริ่มที่ ${MATCH_START_SEC} วินาที จับคู่ถูกได้เวลาเพิ่ม ${MATCH_BONUS_SEC} วินาที`, ok: true };
           },
           start: opts => startMatch(opts)
         }
@@ -835,11 +877,6 @@
         $('timeNum').textContent = s;
         $('hudTimer').classList.toggle('low', s <= 10);
       }
-      function flashBonus() {
-        const b = $('bonus');
-        b.textContent = '+' + QUIZ_BONUS_SEC;
-        b.classList.remove('show'); void b.offsetWidth; b.classList.add('show');
-      }
 
       function renderQ() {
         const q = game.qs[game.i], it = q.item, total = game.qs.length;
@@ -891,7 +928,7 @@
         });
 
         g.answeredCount++;
-        if (ok) { g.correct++; g.left += QUIZ_BONUS_SEC * 1000; flashBonus(); updateTimeUI(); }
+        if (ok) { g.correct++; g.left += QUIZ_BONUS_SEC * 1000; flashBonus('bonus', QUIZ_BONUS_SEC); updateTimeUI(); }
         else g.wrongs.push(q.item);
         $('hudScore').textContent = `ถูก ${g.correct}`;
         $('fb').textContent = ok ? 'ถูกต้อง' : 'ผิด คำตอบที่ถูกคือ ' + q.answer;
@@ -959,12 +996,13 @@
          เกม: จับคู่คำศัพท์
          ===================================================== */
       let mg = null;
+      let lastLayout = '';             // จำการจัดวางรอบก่อน เพื่อไม่ให้รอบใหม่เรียงซ้ำเดิม
 
       function startMatch(opts) {
         stopAll();
         D = loadData();
         const pool = poolFor(opts.scope);
-        // เลือกเฉพาะรายการที่ความหมายไม่ซ้ำกัน (กันจับคู่กำกวม)
+        // เลือกเฉพาะรายการที่ความหมายไม่ซ้ำกัน (กันจับคู่กำกวม) โดยสุ่มคำใหม่ทุกรอบ
         const seen = new Set(), uniq = [];
         shuffle(pool.slice()).forEach(it => {
           const k = key(it.meaning);
@@ -973,15 +1011,42 @@
         const items = uniq.slice(0, opts.count);
         if (items.length < 3) { openSetup('match'); return; }
 
-        const left = shuffle(items.slice());
-        let right = shuffle(items.slice());
-        for (let t = 0; t < 10 && right.every((x, i) => x === left[i]); t++) right = shuffle(items.slice());
+        // สุ่มตำแหน่งการ์ดทั้งสองฝั่งใหม่ทุกครั้ง (ไม่ให้เหมือนรอบก่อน และไม่ให้ซ้ายขวาเรียงตรงกันพอดี)
+        const sig = a => a.map(x => x.id).join(',');
+        let left, right;
+        for (let t = 0; t < 12; t++) {
+          left = shuffle(items.slice());
+          right = shuffle(items.slice());
+          if (sig(left) + '|' + sig(right) !== lastLayout && !right.every((x, i) => x === left[i])) break;
+        }
+        lastLayout = sig(left) + '|' + sig(right);
 
         lastRun = { id: 'match', opts };
-        mg = { opts, items, left, right, matched: 0, mistakes: 0, wrongIds: new Set(), selL: null, selR: null, busy: false, over: false, t0: Date.now() };
+        mg = {
+          opts, items, left, right,
+          matched: 0, mistakes: 0, wrongIds: new Set(),
+          selL: null, selR: null, busy: false, over: false, finishing: false,
+          left$: MATCH_START_SEC * 1000, last: performance.now(), t0: Date.now()
+        };
         renderBoard();
         show('vMatch');
-        matchTimer = setInterval(() => { if (mg && !mg.over) $('mTime').textContent = fmtClock(Date.now() - mg.t0); }, 250);
+        matchTimer = setInterval(matchTick, 100);
+      }
+
+      // ตัวนับเวลาถอยหลังของเกมจับคู่
+      function matchTick() {
+        const g = mg;
+        if (!g || g.over || g.finishing) return;
+        const now = performance.now();
+        g.left$ -= now - g.last;
+        g.last = now;
+        if (g.left$ <= 0) { g.left$ = 0; updateMatchTime(); finishMatch(g, 'time'); return; }
+        updateMatchTime();
+      }
+      function updateMatchTime() {
+        const s = Math.ceil(mg.left$ / 1000);
+        $('mTimeNum').textContent = s;
+        $('mHudTimer').classList.toggle('low', s <= 10);
       }
 
       function updateMatchHud() {
@@ -991,7 +1056,7 @@
       }
 
       function renderBoard() {
-        $('mTime').textContent = '0:00';
+        updateMatchTime();
         updateMatchHud();
         const board = $('board');
         board.replaceChildren();
@@ -1003,6 +1068,7 @@
           const h = el('span', 'mc-hanzi', it.hanzi); h.lang = 'zh-CN';
           b.append(h);
           if (it.pinyin) b.append(el('span', 'mc-pinyin', it.pinyin));
+          if (it.thaiReading) b.append(el('span', 'mc-thai', it.thaiReading));
           colL.append(b);
         });
         mg.right.forEach(it => {
@@ -1019,7 +1085,7 @@
       $('board').addEventListener('click', e => {
         const b = e.target.closest('.mcard');
         const g = mg;
-        if (!b || !g || g.over || g.busy || b.classList.contains('matched')) return;
+        if (!b || !g || g.over || g.finishing || g.busy || b.classList.contains('matched')) return;
         const side = b.dataset.side, id = b.dataset.id, k = side === 'L' ? 'selL' : 'selR';
 
         if (g[k] === id) { g[k] = null; b.classList.remove('sel'); return; }            // แตะซ้ำ = ยกเลิกเลือก
@@ -1032,13 +1098,25 @@
         const L = g.selL, R = g.selR;
         const bl = cardOf('L', L), br = cardOf('R', R);
         if (L === R) {
-          [bl, br].forEach(c => { c.classList.remove('sel'); c.classList.add('matched'); c.disabled = true; });
+          // จับถูก: เล่นเอฟเฟกต์หายไป + เพิ่มเวลา
+          [bl, br].forEach(c => {
+            c.classList.remove('sel');
+            c.classList.add('matched');
+            c.disabled = true;
+            c.addEventListener('animationend', ev => { if (ev.animationName === 'vanish') c.classList.add('gone'); });
+          });
           g.selL = g.selR = null;
           g.matched++;
+          g.left$ += MATCH_BONUS_SEC * 1000;
+          flashBonus('mBonus', MATCH_BONUS_SEC);
+          updateMatchTime();
           updateMatchHud();
           const it = g.items.find(x => x.id === L);
           if (it) speak(it.hanzi);
-          if (g.matched === g.items.length) setTimeout(() => finishMatch(g), 600);
+          if (g.matched === g.items.length) {
+            g.finishing = true;                            // หยุดนับเวลาทันที แล้วรอให้เอฟเฟกต์เล่นจบก่อนขึ้นป๊อบอัพ
+            setTimeout(() => finishMatch(g, 'done'), 750);
+          }
         } else {
           g.mistakes++;
           g.wrongIds.add(L);                               // นับความผิดพลาดให้กับคำที่เป็นอักษรจีน
@@ -1053,26 +1131,36 @@
         }
       }
 
-      function finishMatch(g) {
+      function finishMatch(g, reason) {
         if (mg !== g || g.over) return;
         g.over = true;
         clearInterval(matchTimer); matchTimer = null;
 
-        const n = g.items.length, m = g.mistakes;
+        const n = g.items.length, matched = g.matched, m = g.mistakes;
         const durationSec = Math.max(1, Math.round((Date.now() - g.t0) / 1000));
-        const saved = saveHistory({
-          mode: 'match',
-          total: n + m, correct: n, wrong: m,               // นับทุกครั้งที่จับคู่: จับถูก n ครั้ง จับผิด m ครั้ง
-          durationSec,
-          wrongItemIds: [...g.wrongIds]
-        });
+        const timeUp = reason === 'time';
+        const attempts = matched + m;                      // นับทุกครั้งที่จับ ทั้งถูกและผิด
+
+        // บันทึกเฉพาะรอบที่ได้จับอย่างน้อย 1 ครั้ง
+        let saved = true;
+        if (attempts > 0) {
+          saved = saveHistory({
+            mode: 'match',
+            total: attempts, correct: matched, wrong: m,
+            planned: n, timeUp,
+            durationSec,
+            wrongItemIds: [...g.wrongIds]
+          });
+        }
         const wrongs = g.items.filter(x => g.wrongIds.has(x.id));
 
         showResult({
-          title: 'จับคู่ครบแล้ว',
-          glyph: '完',
-          main: n, sub: `/ ${n} คู่`,
-          msg: m === 0 ? 'ไม่พลาดเลย ยอดเยี่ยม' : `ผิด ${m} ครั้ง ` + (m <= 2 ? 'เก่งมาก' : m <= 5 ? 'ดีแล้ว ทบทวนอีกนิดจะแม่นขึ้น' : 'ลองอีกรอบ จะจำได้มากขึ้น'),
+          title: timeUp ? 'หมดเวลา' : 'จับคู่ครบแล้ว',
+          glyph: timeUp ? '时' : '完',
+          main: matched, sub: `/ ${n} คู่`,
+          msg: timeUp
+            ? `จับคู่ได้ ${matched} จาก ${n} คู่ ผิด ${m} ครั้ง`
+            : (m === 0 ? 'ไม่พลาดเลย ยอดเยี่ยม' : `ผิด ${m} ครั้ง ` + (m <= 2 ? 'เก่งมาก' : m <= 5 ? 'ดีแล้ว ทบทวนอีกนิดจะแม่นขึ้น' : 'ลองอีกรอบ จะจำได้มากขึ้น')),
           time: 'ใช้เวลา ' + fmtTime(durationSec),
           saved, wrongs, wrongLabel: 'คำที่จับผิด'
         });
