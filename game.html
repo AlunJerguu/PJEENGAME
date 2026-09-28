@@ -130,7 +130,7 @@
 
     /* ---------- [เฉพาะหน้า] หน้าเล่นเกม ---------- */
 
-    /* สีตัวหนังสือแยกตามชนิด (ใช้ทั้งสองเกมและป๊อบอัพสรุปผล) */
+    /* สีตัวหนังสือแยกตามชนิด (ใช้ทุกเกมและป๊อบอัพสรุปผล) */
     :root {
       --c-hanzi:  #1D2B2A;   /* อักษรจีน   : ดำเข้ม */
       --c-pinyin: #1F6FB5;   /* พินอิน     : น้ำเงิน */
@@ -235,7 +235,7 @@
     .enter { animation: qIn .3s ease-out both; }
     @keyframes qIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
-    /* เกมตอบคำถาม */
+    /* เกมตอบคำถาม (เกมฟังแล้วเลือกและเติมช่องว่าง ใช้หน้าตาร่วมกัน) */
     .q-card { text-align: center; padding: 22px 16px; }
     .q-label { color: var(--muted); font-size: .85rem; margin: 0 0 8px; }
     .q-hanzi { font-family: 'Noto Serif SC', serif; font-size: 2.8rem; font-weight: 700; line-height: 1.3; margin: 0; word-break: break-word; color: var(--c-hanzi); }
@@ -251,6 +251,9 @@
     .speak-btn:hover { background: var(--jade); color: #fff; }
     .speak-btn:active { transform: scale(.96); }
     .speak-btn:focus-visible { outline: 2px solid var(--jade); outline-offset: 2px; }
+    .speak-btn.big { padding: .6rem 1.5rem; font-size: 1.05rem; }
+    .speak-btn.playing { background: var(--jade); color: #fff; }
+    .speak-btn.playing i { display: inline-block; animation: pulse .8s ease-in-out infinite; }
 
     .q-ask { font-weight: 700; margin: 18px 0 8px; }
     .choices { display: flex; flex-direction: column; gap: 10px; }
@@ -280,6 +283,18 @@
     .choice.wrong .choice-mark { opacity: 1; color: var(--seal); }
     @keyframes pop   { 50% { transform: scale(1.02); } }
     @keyframes shake { 20% { transform: translateX(-6px); } 50% { transform: translateX(6px); } 80% { transform: translateX(-3px); } }
+
+    /* เกมเติมช่องว่าง */
+    .bk-hint { color: var(--c-mean); font-weight: 500; margin: 8px 0 0; word-break: break-word; }
+    .bk-hint small { color: var(--muted); font-weight: 400; font-size: .85rem; }
+    .blank {
+      display: inline-block; min-width: 1.1em; margin: 0 .08em; text-align: center; line-height: 1.1;
+      border-bottom: 3px solid var(--seal); color: var(--seal);
+      transition: color .2s, border-color .2s;
+    }
+    .blank.filled { border-bottom-color: var(--jade); color: var(--jade); }
+    .choices.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .choice.char .choice-text { text-align: center; font-family: 'Noto Serif SC', serif; font-size: 1.7rem; font-weight: 700; color: var(--c-hanzi); }
 
     /* เกมจับคู่คำศัพท์ */
     .board { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -318,6 +333,40 @@
       100% { transform: scale(.55) rotate(-3deg); opacity: 0; background: #E8F2EF; border-color: var(--jade); box-shadow: 0 0 0 0 rgba(47, 125, 109, 0); }
     }
     @keyframes ring { from { opacity: .7; transform: scale(1); } to { opacity: 0; transform: scale(1.45); } }
+
+    /* เกมพลิกการ์ดจำตำแหน่ง */
+    .fboard { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .fcard {
+      position: relative; height: clamp(92px, 24vw, 130px);
+      perspective: 800px; cursor: pointer; outline: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .fcard:focus-visible .fcard-inner { outline: 2px solid var(--jade); outline-offset: 2px; border-radius: 12px; }
+    .fcard-inner {
+      position: absolute; inset: 0;
+      transform-style: preserve-3d;
+      transition: transform .45s cubic-bezier(.4, .2, .2, 1);
+    }
+    .fcard.flip .fcard-inner { transform: rotateY(180deg); }
+    .fcard-face {
+      position: absolute; inset: 0; overflow: hidden;
+      backface-visibility: hidden; -webkit-backface-visibility: hidden;
+      border-radius: 12px; padding: 4px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+    }
+    .fcard-back {
+      background: var(--ink); color: rgba(255, 255, 255, .28);
+      font-family: 'Noto Serif SC', serif; font-size: 1.9rem; font-weight: 700;
+      box-shadow: inset 0 0 0 3px rgba(255, 255, 255, .08);
+    }
+    .fcard-front { transform: rotateY(180deg); background: #fff; border: 1.5px solid var(--line); }
+    .fcard.done { cursor: default; animation: pop .3s ease-out; }
+    .fcard.done .fcard-front { background: #E8F2EF; border-color: var(--jade); }
+    .fcard.bad { animation: shake .35s; }
+    .fcard.bad .fcard-front { background: #FBECEA; border-color: var(--seal); }
+    .fc-hanzi { font-family: 'Noto Serif SC', serif; font-weight: 700; font-size: clamp(.95rem, 4.2vw, 1.35rem); line-height: 1.25; color: var(--c-hanzi); word-break: break-word; }
+    .fc-pinyin { color: var(--c-pinyin); font-size: clamp(.62rem, 2.5vw, .8rem); word-break: break-word; }
+    .fc-meaning { color: var(--c-mean); font-weight: 500; font-size: clamp(.7rem, 3vw, .9rem); line-height: 1.3; word-break: break-word; }
 
     /* ป๊อบอัพสรุปผล */
     .modal-content { border: 1px solid var(--line); border-radius: 16px; }
@@ -459,6 +508,75 @@
       <div class="board" id="board"></div>
     </section>
 
+    <!-- ===== 5) เล่นเกม: ฟังแล้วเลือก ===== -->
+    <section id="vListen" class="d-none">
+      <div class="hud">
+        <span class="hud-step" id="lStep"></span>
+        <span class="hud-timer" id="lHudTimer" aria-label="เวลาที่เหลือ">
+          <i class="bi bi-stopwatch"></i><span><span id="lTimeNum">30</span> วิ</span>
+          <span class="bonus" id="lBonus" aria-hidden="true">+2</span>
+        </span>
+        <span class="hud-score" id="lScore"></span>
+      </div>
+      <div class="pbar" role="progressbar" aria-label="ความคืบหน้า"><div class="pfill" id="lFill"></div></div>
+
+      <div id="lWrap">
+        <section class="card-box q-card">
+          <p class="q-label">ฟังเสียงแล้วตอบ</p>
+          <p class="q-hanzi" id="lHanzi" lang="zh-CN"></p>
+          <p class="q-pinyin" id="lPinyin"></p>
+          <p class="q-thai" id="lThai"></p>
+          <button type="button" class="speak-btn big" id="lReplay"><i class="bi bi-volume-up"></i> ฟังอีกครั้ง</button>
+        </section>
+
+        <p class="q-ask">ได้ยินว่าอะไร? เลือกความหมายไทยที่ถูกต้อง</p>
+        <div class="choices" id="lChoices"></div>
+      </div>
+
+      <div class="visually-hidden" id="lFb" role="status" aria-live="polite"></div>
+    </section>
+
+    <!-- ===== 6) เล่นเกม: เติมช่องว่าง ===== -->
+    <section id="vFill" class="d-none">
+      <div class="hud">
+        <span class="hud-step" id="bkStep"></span>
+        <span class="hud-timer" id="bkHudTimer" aria-label="เวลาที่เหลือ">
+          <i class="bi bi-stopwatch"></i><span><span id="bkTimeNum">30</span> วิ</span>
+          <span class="bonus" id="bkBonus" aria-hidden="true">+2</span>
+        </span>
+        <span class="hud-score" id="bkScore"></span>
+      </div>
+      <div class="pbar" role="progressbar" aria-label="ความคืบหน้า"><div class="pfill" id="bkFill"></div></div>
+
+      <div id="bkWrap">
+        <section class="card-box q-card">
+          <p class="q-label">เติมตัวอักษรที่หายไป</p>
+          <p class="q-hanzi" id="bkSentence" lang="zh-CN" role="img"></p>
+          <p class="bk-hint" id="bkMeaning"></p>
+        </section>
+
+        <p class="q-ask">เลือกตัวอักษรที่ใช่</p>
+        <div class="choices grid2" id="bkChoices"></div>
+      </div>
+
+      <div class="visually-hidden" id="bkFb" role="status" aria-live="polite"></div>
+    </section>
+
+    <!-- ===== 7) เล่นเกม: พลิกการ์ดจำตำแหน่ง ===== -->
+    <section id="vFlip" class="d-none">
+      <div class="hud">
+        <span class="hud-step" id="fpStep"></span>
+        <span class="hud-timer" id="fpHudTimer" aria-label="เวลาที่เหลือ">
+          <i class="bi bi-stopwatch"></i><span><span id="fpTimeNum">45</span> วิ</span>
+          <span class="bonus" id="fpBonus" aria-hidden="true">+2</span>
+        </span>
+        <span class="hud-score" id="fpMiss"></span>
+      </div>
+      <div class="pbar" role="progressbar" aria-label="ความคืบหน้า"><div class="pfill" id="fpFill"></div></div>
+      <p class="q-ask mt-0">แตะการ์ดทีละ 2 ใบ หาอักษรจีนที่คู่กับความหมาย ต้องจำตำแหน่งให้ดี</p>
+      <div class="fboard" id="fpBoard"></div>
+    </section>
+
   </main>
 
   <!-- ================= [เฉพาะหน้า] ป๊อบอัพสรุปผล ================= -->
@@ -501,7 +619,7 @@
   <!-- ============================================================
        JavaScript
        ส่วน [ส่วนกลาง] = ระบบ navbar ใช้เหมือนกันทุกหน้า
-       ส่วน [เฉพาะหน้า] = ระบบเกม (เมนูเลือกเกม, ตอบคำถาม, จับคู่)
+       ส่วน [เฉพาะหน้า] = ระบบเกม (เมนูเลือกเกม, ตอบคำถาม, จับคู่, ฟังแล้วเลือก, เติมช่องว่าง, พลิกการ์ด)
        ============================================================ -->
   <script>
     /* ---------- [ส่วนกลาง] ระบบ Bottom Navbar ---------- */
@@ -569,8 +687,22 @@
       const FLASH_BAD_MS = 800;                      // (ตอบผิด ให้เห็นคำตอบที่ถูกนานขึ้นหน่อย)
 
       // ตั้งค่าเกมจับคู่
-      const MATCH_START_SEC = 30;                    // เวลาเริ่มต้น (วินาที)
-      const MATCH_BONUS_SEC = 2;                     // จับคู่ถูกได้เวลาเพิ่ม (วินาที)
+      const MATCH_START_SEC = 30;
+      const MATCH_BONUS_SEC = 2;
+
+      // ตั้งค่าเกมฟังแล้วเลือก
+      const LISTEN_START_SEC = 30;
+      const LISTEN_BONUS_SEC = 2;
+      const LISTEN_AUTOPLAY_DELAY_MS = 350;          // รอให้โจทย์ใหม่ขึ้นก่อน แล้วค่อยอ่านออกเสียงอัตโนมัติ
+
+      // ตั้งค่าเกมเติมช่องว่าง
+      const FILL_START_SEC = 30;
+      const FILL_BONUS_SEC = 2;
+
+      // ตั้งค่าเกมพลิกการ์ดจำตำแหน่ง
+      const FLIP_START_SEC = 45;
+      const FLIP_BONUS_SEC = 2;
+      const FLIP_HIDE_MS = 900;                      // จับคู่ผิด ค้างให้ดูก่อนคว่ำกลับ
 
       const read = k => {
         try { const v = JSON.parse(localStorage.getItem(k)); return Array.isArray(v) ? v : []; }
@@ -594,6 +726,7 @@
       const pad = n => String(n).padStart(2, '0');
       const dayKey = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;   // YYYY-MM-DD ตามเวลาเครื่อง
       const fmtTime = s => s < 60 ? `${s} วินาที` : `${Math.floor(s / 60)} นาที ${s % 60} วินาที`;
+      const gradeText = pct => pct === 100 ? 'ถูกทุกข้อ ยอดเยี่ยม' : pct >= 80 ? 'เก่งมาก' : pct >= 60 ? 'ดีแล้ว ทบทวนอีกนิดจะแม่นขึ้น' : 'ลองอีกรอบ จะจำได้มากขึ้น';
 
       function shuffle(a) {
         for (let i = a.length - 1; i > 0; i--) {
@@ -603,13 +736,27 @@
         return a;
       }
 
-      function speak(text) {
+      // อ่านออกเสียง (ถ้าส่งปุ่มมาด้วย ปุ่มจะกะพริบระหว่างที่กำลังอ่าน)
+      let curUtter = null;
+      function speak(text, btn) {
         if (!canSpeak) return;
         speechSynthesis.cancel();
+        document.querySelectorAll('.speak-btn.playing').forEach(b => b.classList.remove('playing'));
         const u = new SpeechSynthesisUtterance(text);
         u.lang = 'zh-CN';
         u.rate = 0.85;
+        curUtter = u;
+        if (btn) {
+          u.onstart = () => { if (curUtter === u) btn.classList.add('playing'); };
+          u.onend = u.onerror = () => { if (curUtter === u) btn.classList.remove('playing'); };
+        }
         speechSynthesis.speak(u);
+      }
+      // เช็กว่าเครื่องมีเสียงภาษาจีนไหม (null = ยังโหลดรายการเสียงไม่เสร็จ ไม่รู้แน่)
+      function zhVoiceState() {
+        if (!canSpeak) return null;
+        const v = speechSynthesis.getVoices();
+        return v.length ? v.some(x => /^zh/i.test(x.lang)) : null;
       }
 
       // เล่นแอนิเมชัน "+วินาที" ลอยขึ้นตรงตัวจับเวลา
@@ -618,6 +765,12 @@
         b.textContent = '+' + sec;
         b.classList.remove('show'); void b.offsetWidth; b.classList.add('show');
       }
+
+      // ตัวช่วยของเกมเติมช่องว่าง: นับอักษรจีนในข้อความ
+      const CJK_RE = /[\u4e00-\u9fff]/;
+      const cjkChars = s => String(s || '').match(/[\u4e00-\u9fff]/g) || [];
+      const fillEligible = list => list.filter(i => cjkChars(i.hanzi).length >= 2);      // เล่นได้ต้องมีอักษรจีน 2 ตัวขึ้นไป
+      const charBank = list => { const s = new Set(); list.forEach(i => cjkChars(i.hanzi).forEach(c => s.add(c))); return [...s]; };
 
       /* ----- อ่านข้อมูลจากบทเรียน จัดเป็นชุด ----- */
       function loadData() {
@@ -638,6 +791,15 @@
         const g = D.groups.find(x => x.id === scope);
         return g ? g.items : D.items;
       }
+      // เลือกรายการที่ความหมายไม่ซ้ำกัน (ใช้กับเกมจับคู่และพลิกการ์ด) โดยสุ่มคำใหม่ทุกรอบ
+      function pickUnique(pool, n) {
+        const seen = new Set(), uniq = [];
+        shuffle(pool.slice()).forEach(it => {
+          const k = key(it.meaning);
+          if (!seen.has(k)) { seen.add(k); uniq.push(it); }
+        });
+        return uniq.slice(0, n);
+      }
 
       /* ----- บันทึกผลลงประวัติ (หน้าสถิติและหน้าหลักอ่านจากตรงนี้) ----- */
       function saveHistory(entry) {
@@ -652,7 +814,7 @@
       }
 
       /* ===================== สลับหน้าจอ ===================== */
-      const VIEWS = ['vMenu', 'vSetup', 'vPlay', 'vMatch'];
+      const VIEWS = ['vMenu', 'vSetup', 'vPlay', 'vMatch', 'vListen', 'vFill', 'vFlip'];
       const show = id => {
         VIEWS.forEach(v => $(v).classList.toggle('d-none', v !== id));
         window.scrollTo(0, 0);
@@ -722,6 +884,49 @@
               : { text: `จะได้จับคู่ ${Math.min(count, u)} คู่ จากทั้งหมด ${u} รายการ ตำแหน่งการ์ดสุ่มใหม่ทุกครั้ง\nเริ่มที่ ${MATCH_START_SEC} วินาที จับคู่ถูกได้เวลาเพิ่ม ${MATCH_BONUS_SEC} วินาที`, ok: true };
           },
           start: opts => startMatch(opts)
+        },
+        listen: {
+          glyph: '听', title: 'ฟังแล้วเลือก',
+          desc: 'ฟังเสียงอ่านของคำหรือประโยค แล้วเลือกความหมายไทยที่ถูกจาก 4 ตัวเลือก มีเวลานับถอยหลัง ตอบถูกได้เวลาเพิ่ม ฟังซ้ำได้',
+          countLabel: 'จำนวนข้อ', unit: 'ข้อ', counts: [5, 10, 15], defCount: 10,
+          minDistinct: 4,
+          need: n => `ต้องมีอย่างน้อย 4 รายการที่ความหมายไม่ซ้ำกัน เพื่อทำตัวเลือก 4 ข้อ ตอนนี้มี ${n} รายการ`,
+          info: (pool, count) => {
+            if (!canSpeak) return { text: 'เบราว์เซอร์นี้ไม่รองรับเสียงอ่าน จึงเล่นเกมนี้ไม่ได้ ลองเปิดด้วย Chrome, Edge หรือ Safari', ok: false };
+            let text = `จะได้เล่น ${Math.min(count, pool.length)} ข้อ จากทั้งหมด ${pool.length} รายการ\nเริ่มที่ ${LISTEN_START_SEC} วินาที ตอบถูกได้เวลาเพิ่ม ${LISTEN_BONUS_SEC} วินาที\nแอปจะอ่านออกเสียงให้ฟังเองทุกข้อ กดฟังอีกครั้งได้ไม่จำกัด`;
+            if (zhVoiceState() === false) text += '\nเครื่องนี้อาจไม่มีเสียงภาษาจีน เสียงที่ได้ยินอาจเพี้ยนหรือไม่ออกเสียง';
+            return { text, ok: pool.length > 0 };
+          },
+          start: opts => startListen(opts)
+        },
+        fill: {
+          glyph: '填', title: 'เติมช่องว่าง',
+          desc: 'คำหรือประโยคที่หายไป 1 ตัวอักษร เลือกตัวอักษรที่ใช่ โดยมีความหมายไทยเป็นคำใบ้ มีเวลานับถอยหลัง ตอบถูกได้เวลาเพิ่ม',
+          countLabel: 'จำนวนข้อ', unit: 'ข้อ', counts: [5, 10, 15], defCount: 10,
+          minDistinct: 1,
+          ready: d => fillEligible(d.items).length >= 1 && charBank(d.items).length >= 4,
+          need: n => `ต้องมีคำหรือประโยคที่มีอักษรจีนอย่างน้อย 2 ตัว และมีอักษรจีนที่ไม่ซ้ำกันรวมอย่างน้อย 4 ตัว ตอนนี้มี ${n} รายการ`,
+          info: (pool, count) => {
+            const e = fillEligible(pool).length;
+            return e === 0
+              ? { text: 'ชุดนี้ไม่มีคำหรือประโยคที่มีอักษรจีนอย่างน้อย 2 ตัว เล่นเกมนี้ไม่ได้ ลองเลือกชุดอื่น', ok: false }
+              : { text: `จะได้เล่น ${Math.min(count, e)} ข้อ จากรายการที่เล่นได้ ${e} รายการ\nเริ่มที่ ${FILL_START_SEC} วินาที ตอบถูกได้เวลาเพิ่ม ${FILL_BONUS_SEC} วินาที`, ok: true };
+          },
+          start: opts => startFill(opts)
+        },
+        flip: {
+          glyph: '记', title: 'พลิกการ์ดจำตำแหน่ง',
+          desc: 'พลิกการ์ดทีละ 2 ใบ หาอักษรจีนที่คู่กับความหมาย ต้องจำตำแหน่งให้ดี มีเวลานับถอยหลัง จับคู่ถูกได้เวลาเพิ่ม',
+          countLabel: 'จำนวนคู่', unit: 'คู่', counts: [4, 6, 8], defCount: 6,
+          minDistinct: 4,
+          need: n => `ต้องมีอย่างน้อย 4 รายการที่ความหมายไม่ซ้ำกัน ตอนนี้มี ${n} รายการ`,
+          info: (pool, count) => {
+            const u = distinctOf(pool);
+            return u < 4
+              ? { text: 'ชุดนี้มีรายการที่ความหมายไม่ซ้ำน้อยกว่า 4 รายการ เล่นเกมนี้ไม่ได้ ลองเลือกชุดอื่น', ok: false }
+              : { text: `จะได้เล่น ${Math.min(count, u)} คู่ (${Math.min(count, u) * 2} ใบ) จากทั้งหมด ${u} รายการ ตำแหน่งสุ่มใหม่ทุกครั้ง\nเริ่มที่ ${FLIP_START_SEC} วินาที จับคู่ถูกได้เวลาเพิ่ม ${FLIP_BONUS_SEC} วินาที`, ok: true };
+          },
+          start: opts => startFlip(opts)
         }
       };
       let curGame = null;              // เกมที่กำลังดูหน้าตั้งค่า
@@ -769,7 +974,7 @@
       function refreshSetup() {
         D = loadData();
         const g = GAMES[curGame];
-        const ok = distinctOf(D.items) >= g.minDistinct;
+        const ok = g.ready ? g.ready(D) : distinctOf(D.items) >= g.minDistinct;
         $('needMore').classList.toggle('d-none', ok);
         $('gameBody').classList.toggle('d-none', !ok);
         $('needText').textContent = g.need(D.items.length);
@@ -812,13 +1017,20 @@
       $('scope').addEventListener('change', updateInfo);
       $('startBtn').addEventListener('click', () => GAMES[curGame].start({ scope: $('scope').value, count: chosenCount() }));
 
-      /* ===================== หยุดตัวจับเวลาทั้งหมด ===================== */
-      let quizTimer = null, matchTimer = null;
+      /* ===================== หยุดตัวจับเวลา/เสียงทั้งหมด ===================== */
+      let quizTimer = null, matchTimer = null, listenTimer = null, fillTimer = null, flipTimer = null;
       function stopAll() {
-        clearInterval(quizTimer); quizTimer = null;
-        clearInterval(matchTimer); matchTimer = null;
+        clearInterval(quizTimer);   quizTimer = null;
+        clearInterval(matchTimer);  matchTimer = null;
+        clearInterval(listenTimer); listenTimer = null;
+        clearInterval(fillTimer);   fillTimer = null;
+        clearInterval(flipTimer);   flipTimer = null;
         if (game) game.over = true;
         if (mg) mg.over = true;
+        if (lg) lg.over = true;
+        if (bg) bg.over = true;
+        if (fg) fg.over = true;
+        if (canSpeak) speechSynthesis.cancel();
       }
 
       /* =====================================================
@@ -826,7 +1038,7 @@
          ===================================================== */
       let game = null;
 
-      // สร้างโจทย์: คำตอบที่ถูก + ตัวหลอก 3 ข้อ (เลือกประเภทเดียวกันก่อน)
+      // สร้างโจทย์: คำตอบที่ถูก + ตัวหลอก 3 ข้อ (เลือกประเภทเดียวกันก่อน) — ใช้ร่วมกับเกมฟังแล้วเลือก
       function makeQuestions(pool, all, n) {
         return shuffle(pool.slice()).slice(0, n).map(it => {
           const others = all.filter(x => x.id !== it.id && key(x.meaning) !== key(it.meaning));
@@ -986,7 +1198,7 @@
           main: correct, sub: `/ ${total}`,
           msg: timeUp
             ? `ตอบไป ${g.answeredCount} จาก ${total} ข้อ ถูก ${correct} ข้อ`
-            : `${pct}%  ` + (pct === 100 ? 'ถูกทุกข้อ ยอดเยี่ยม' : pct >= 80 ? 'เก่งมาก' : pct >= 60 ? 'ดีแล้ว ทบทวนอีกนิดจะแม่นขึ้น' : 'ลองอีกรอบ จะจำได้มากขึ้น'),
+            : `${pct}%  ` + gradeText(pct),
           time: 'ใช้เวลา ' + fmtTime(durationSec),
           saved, wrongs: g.wrongs, wrongLabel: 'คำที่ตอบผิด'
         });
@@ -1002,13 +1214,7 @@
         stopAll();
         D = loadData();
         const pool = poolFor(opts.scope);
-        // เลือกเฉพาะรายการที่ความหมายไม่ซ้ำกัน (กันจับคู่กำกวม) โดยสุ่มคำใหม่ทุกรอบ
-        const seen = new Set(), uniq = [];
-        shuffle(pool.slice()).forEach(it => {
-          const k = key(it.meaning);
-          if (!seen.has(k)) { seen.add(k); uniq.push(it); }
-        });
-        const items = uniq.slice(0, opts.count);
+        const items = pickUnique(pool, opts.count);        // ความหมายไม่ซ้ำกัน กันจับคู่กำกวม
         if (items.length < 3) { openSetup('match'); return; }
 
         // สุ่มตำแหน่งการ์ดทั้งสองฝั่งใหม่ทุกครั้ง (ไม่ให้เหมือนรอบก่อน และไม่ให้ซ้ายขวาเรียงตรงกันพอดี)
@@ -1166,11 +1372,544 @@
         });
       }
 
+      /* =====================================================
+         เกม: ฟังแล้วเลือก
+         โจทย์แสดงอักษรจีน พินอิน คำอ่านไทย และอ่านออกเสียงให้ฟังอัตโนมัติ
+         ผู้เล่นเลือกความหมายไทยที่ถูก มีเวลานับถอยหลัง ตอบถูกได้เวลาเพิ่ม (ฟังซ้ำได้ไม่จำกัด)
+         ===================================================== */
+      let lg = null;
+
+      function startListen(opts) {
+        stopAll();
+        D = loadData();
+        const pool = poolFor(opts.scope);
+        if (!canSpeak || !pool.length || distinctOf(D.items) < 4) { openSetup('listen'); return; }
+        const qs = makeQuestions(pool, D.items, Math.min(opts.count, pool.length));
+        lastRun = { id: 'listen', opts };
+        lg = {
+          opts, qs, i: 0, correct: 0, answeredCount: 0, wrongs: [],
+          answered: false, over: false, paused: false,
+          left: LISTEN_START_SEC * 1000, last: performance.now(), t0: Date.now()
+        };
+        show('vListen');
+        renderL(true);
+        updateListenTime();
+        listenTimer = setInterval(listenTick, 100);
+      }
+
+      // ตัวนับเวลาถอยหลัง (หยุดชั่วคราวตอนโชว์เฉลย)
+      function listenTick() {
+        if (!lg || lg.over) return;
+        const now = performance.now();
+        if (!lg.paused) lg.left -= now - lg.last;
+        lg.last = now;
+        if (lg.left <= 0) { lg.left = 0; updateListenTime(); finishListen('time'); return; }
+        updateListenTime();
+      }
+      function updateListenTime() {
+        const s = Math.ceil(lg.left / 1000);
+        $('lTimeNum').textContent = s;
+        $('lHudTimer').classList.toggle('low', s <= 10);
+      }
+
+      function renderL(first) {
+        const g = lg, idx = g.i, q = g.qs[idx], it = q.item, total = g.qs.length;
+        g.answered = false;
+
+        $('lStep').textContent = `ข้อ ${idx + 1} / ${total}`;
+        $('lScore').textContent = `ถูก ${g.correct}`;
+        $('lFill').style.width = (idx / total * 100) + '%';
+
+        const h = $('lHanzi');
+        h.textContent = it.hanzi;
+        h.classList.toggle('is-sentence', typeOf(it) === 'sentence');
+        $('lPinyin').textContent = it.pinyin || '';
+        $('lThai').textContent = it.thaiReading || '';
+
+        const box = $('lChoices');
+        box.replaceChildren();
+        q.choices.forEach((c, i) => {
+          const b = el('button', 'choice');
+          b.type = 'button';
+          b.dataset.idx = i;
+          const mark = el('i', 'bi choice-mark');
+          mark.setAttribute('aria-hidden', 'true');
+          b.append(el('span', 'choice-tag', TAGS[i]), el('span', 'choice-text', c), mark);
+          box.append(b);
+        });
+        $('lFb').textContent = '';
+
+        const w = $('lWrap');
+        w.classList.remove('enter'); void w.offsetWidth; w.classList.add('enter');
+
+        // อ่านออกเสียงให้อัตโนมัติ (ข้อแรกอ่านทันที เพราะเพิ่งกดเริ่มเล่น เบราว์เซอร์อนุญาตแน่นอน)
+        if (first) speak(it.hanzi, $('lReplay'));
+        else setTimeout(() => { if (lg === g && !g.over && g.i === idx) speak(it.hanzi, $('lReplay')); }, LISTEN_AUTOPLAY_DELAY_MS);
+      }
+
+      function answerL(idx) {
+        const g = lg;
+        if (!g || g.answered || g.over) return;
+        g.answered = true;
+        g.paused = true;                                   // หยุดเวลาระหว่างโชว์เฉลย
+        const q = g.qs[g.i];
+        const ok = q.choices[idx] === q.answer;
+
+        [...$('lChoices').children].forEach((b, j) => {
+          b.disabled = true;
+          const mark = b.querySelector('.choice-mark');
+          if (q.choices[j] === q.answer) { b.classList.add('correct'); mark.classList.add('bi-check-circle-fill'); }
+          else if (j === idx)            { b.classList.add('wrong');   mark.classList.add('bi-x-circle-fill'); }
+          else                           { b.classList.add('dim'); }
+        });
+
+        g.answeredCount++;
+        if (ok) { g.correct++; g.left += LISTEN_BONUS_SEC * 1000; flashBonus('lBonus', LISTEN_BONUS_SEC); updateListenTime(); }
+        else g.wrongs.push(q.item);
+        $('lScore').textContent = `ถูก ${g.correct}`;
+        $('lFb').textContent = ok ? 'ถูกต้อง' : 'ผิด คำตอบที่ถูกคือ ' + q.answer;
+
+        // ไปข้อต่อไปเอง (ไม่ต้องกดปุ่ม)
+        setTimeout(() => {
+          if (lg !== g || g.over) return;
+          g.paused = false;
+          g.last = performance.now();
+          g.i++;
+          if (g.i >= g.qs.length) finishListen('done'); else renderL(false);
+        }, ok ? FLASH_OK_MS : FLASH_BAD_MS);
+      }
+
+      $('lChoices').addEventListener('click', e => {
+        const b = e.target.closest('.choice');
+        if (b) answerL(+b.dataset.idx);
+      });
+      // กดเลข 1-4 บนคีย์บอร์ดเพื่อเลือกคำตอบ
+      document.addEventListener('keydown', e => {
+        if (!lg || lg.over || lg.answered || $('vListen').classList.contains('d-none')) return;
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+        const n = parseInt(e.key, 10);
+        if (n >= 1 && n <= lg.qs[lg.i].choices.length) answerL(n - 1);
+      });
+      $('lReplay').addEventListener('click', () => { if (lg && !lg.over) speak(lg.qs[lg.i].item.hanzi, $('lReplay')); });
+
+      function finishListen(reason) {
+        const g = lg;
+        if (!g || g.over) return;
+        g.over = true;
+        clearInterval(listenTimer); listenTimer = null;
+        if (canSpeak) speechSynthesis.cancel();
+
+        const total = g.qs.length, correct = g.correct;
+        const durationSec = Math.max(1, Math.round((Date.now() - g.t0) / 1000));
+        const pct = Math.round(correct / total * 100);
+        const timeUp = reason === 'time';
+
+        // บันทึกเฉพาะรอบที่ตอบไปอย่างน้อย 1 ข้อ
+        let saved = true;
+        if (g.answeredCount > 0) {
+          saved = saveHistory({
+            mode: 'listen',
+            total: g.answeredCount, correct, wrong: g.answeredCount - correct,
+            planned: total, timeUp,
+            durationSec,
+            wrongItemIds: g.wrongs.map(i => i.id)
+          });
+        }
+
+        $('lFill').style.width = (g.answeredCount / total * 100) + '%';
+        showResult({
+          title: timeUp ? 'หมดเวลา' : 'จบเกมแล้ว',
+          glyph: timeUp ? '时' : '完',
+          main: correct, sub: `/ ${total}`,
+          msg: timeUp
+            ? `ตอบไป ${g.answeredCount} จาก ${total} ข้อ ถูก ${correct} ข้อ`
+            : `${pct}%  ` + gradeText(pct),
+          time: 'ใช้เวลา ' + fmtTime(durationSec),
+          saved, wrongs: g.wrongs, wrongLabel: 'คำที่ตอบผิด'
+        });
+      }
+
+      /* =====================================================
+         เกม: เติมช่องว่าง
+         ซ่อนอักษรจีน 1 ตัวในคำ/ประโยค ผู้เล่นเลือกตัวอักษรที่ใช่จาก 4 ตัวเลือก
+         มีความหมายไทยเป็นคำใบ้ เวลานับถอยหลัง 30 วินาที ตอบถูกได้เวลาเพิ่ม 2 วินาที
+         ===================================================== */
+      let bg = null;
+
+      function makeBlankQuestions(pool, all, n) {
+        const bank = charBank(all);
+        return shuffle(fillEligible(pool)).slice(0, n).map(it => {
+          const chars = [...it.hanzi];
+          const idxs = [];
+          chars.forEach((c, i) => { if (CJK_RE.test(c)) idxs.push(i); });
+          // เลือกซ่อนตัวที่ไม่ซ้ำกับตัวอื่นในคำเดียวกันก่อน (ไม่งั้นเห็นคำตอบอยู่แล้ว)
+          const uniq = idxs.filter(i => chars.filter(c => c === chars[i]).length === 1);
+          const cand = uniq.length ? uniq : idxs;
+          const pos = cand[Math.floor(Math.random() * cand.length)];
+          const answer = chars[pos];
+          // ตัวหลอก: อักษรจีนอื่นจากบทเรียน (เลี่ยงตัวที่อยู่ในคำนี้อยู่แล้ว)
+          let wrong = shuffle(bank.filter(c => c !== answer && !chars.includes(c))).slice(0, 3);
+          if (wrong.length < 3) wrong = wrong.concat(shuffle(bank.filter(c => c !== answer && !wrong.includes(c))).slice(0, 3 - wrong.length));
+          return { item: it, chars, pos, answer, choices: shuffle([answer, ...wrong]) };
+        });
+      }
+
+      function startFill(opts) {
+        stopAll();
+        D = loadData();
+        const pool = poolFor(opts.scope);
+        if (!fillEligible(pool).length || charBank(D.items).length < 4) { openSetup('fill'); return; }
+        const qs = makeBlankQuestions(pool, D.items, opts.count);
+        lastRun = { id: 'fill', opts };
+        bg = {
+          opts, qs, i: 0, correct: 0, answeredCount: 0, wrongs: [],
+          answered: false, over: false, paused: false,
+          left: FILL_START_SEC * 1000, last: performance.now(), t0: Date.now()
+        };
+        show('vFill');
+        renderF();
+        updateFillTime();
+        fillTimer = setInterval(fillTick, 100);
+      }
+
+      // ตัวนับเวลาถอยหลัง (หยุดชั่วคราวตอนโชว์เฉลย)
+      function fillTick() {
+        if (!bg || bg.over) return;
+        const now = performance.now();
+        if (!bg.paused) bg.left -= now - bg.last;
+        bg.last = now;
+        if (bg.left <= 0) { bg.left = 0; updateFillTime(); finishFill('time'); return; }
+        updateFillTime();
+      }
+      function updateFillTime() {
+        const s = Math.ceil(bg.left / 1000);
+        $('bkTimeNum').textContent = s;
+        $('bkHudTimer').classList.toggle('low', s <= 10);
+      }
+
+      function renderF() {
+        const g = bg, q = g.qs[g.i], total = g.qs.length;
+        g.answered = false;
+
+        $('bkStep').textContent = `ข้อ ${g.i + 1} / ${total}`;
+        $('bkScore').textContent = `ถูก ${g.correct}`;
+        $('bkFill').style.width = (g.i / total * 100) + '%';
+
+        // ประโยค/คำ โดยมีช่องว่างแทนตัวที่ซ่อน
+        const box = $('bkSentence');
+        box.replaceChildren();
+        box.classList.toggle('is-sentence', typeOf(q.item) === 'sentence');
+        q.chars.forEach((c, i) => {
+          if (i === q.pos) { const s = el('span', 'blank', '\u3000'); s.id = 'bkBlank'; box.append(s); }
+          else box.append(document.createTextNode(c));
+        });
+        box.setAttribute('aria-label', q.chars.map((c, i) => i === q.pos ? 'ช่องว่าง' : c).join(' '));
+
+        // คำใบ้: ความหมายไทย
+        const hint = $('bkMeaning');
+        hint.replaceChildren(el('small', '', 'คำใบ้: '), document.createTextNode(q.item.meaning));
+
+        const ch = $('bkChoices');
+        ch.replaceChildren();
+        q.choices.forEach((c, i) => {
+          const b = el('button', 'choice char');
+          b.type = 'button';
+          b.dataset.idx = i;
+          const mark = el('i', 'bi choice-mark');
+          mark.setAttribute('aria-hidden', 'true');
+          const t = el('span', 'choice-text', c); t.lang = 'zh-CN';
+          b.append(el('span', 'choice-tag', TAGS[i]), t, mark);
+          ch.append(b);
+        });
+        $('bkFb').textContent = '';
+
+        const w = $('bkWrap');
+        w.classList.remove('enter'); void w.offsetWidth; w.classList.add('enter');
+      }
+
+      function answerF(idx) {
+        const g = bg;
+        if (!g || g.answered || g.over) return;
+        g.answered = true;
+        g.paused = true;                                   // หยุดเวลาระหว่างโชว์เฉลย
+        const q = g.qs[g.i];
+        const ok = q.choices[idx] === q.answer;
+
+        [...$('bkChoices').children].forEach((b, j) => {
+          b.disabled = true;
+          const mark = b.querySelector('.choice-mark');
+          if (q.choices[j] === q.answer) { b.classList.add('correct'); mark.classList.add('bi-check-circle-fill'); }
+          else if (j === idx)            { b.classList.add('wrong');   mark.classList.add('bi-x-circle-fill'); }
+          else                           { b.classList.add('dim'); }
+        });
+
+        // เฉลย: เติมตัวอักษรที่ถูกลงในช่องว่าง
+        const blank = $('bkBlank');
+        if (blank) { blank.textContent = q.answer; blank.classList.add('filled'); }
+        $('bkSentence').setAttribute('aria-label', q.chars.join(' '));
+
+        g.answeredCount++;
+        if (ok) { g.correct++; g.left += FILL_BONUS_SEC * 1000; flashBonus('bkBonus', FILL_BONUS_SEC); updateFillTime(); }
+        else g.wrongs.push(q.item);
+        $('bkScore').textContent = `ถูก ${g.correct}`;
+        $('bkFb').textContent = ok ? 'ถูกต้อง' : 'ผิด ตัวอักษรที่ถูกคือ ' + q.answer;
+
+        // ไปข้อต่อไปเอง (ไม่ต้องกดปุ่ม)
+        setTimeout(() => {
+          if (bg !== g || g.over) return;
+          g.paused = false;
+          g.last = performance.now();
+          g.i++;
+          if (g.i >= g.qs.length) finishFill('done'); else renderF();
+        }, ok ? FLASH_OK_MS : FLASH_BAD_MS);
+      }
+
+      $('bkChoices').addEventListener('click', e => {
+        const b = e.target.closest('.choice');
+        if (b) answerF(+b.dataset.idx);
+      });
+      // กดเลข 1-4 บนคีย์บอร์ดเพื่อเลือกคำตอบ
+      document.addEventListener('keydown', e => {
+        if (!bg || bg.over || bg.answered || $('vFill').classList.contains('d-none')) return;
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+        const n = parseInt(e.key, 10);
+        if (n >= 1 && n <= bg.qs[bg.i].choices.length) answerF(n - 1);
+      });
+
+      function finishFill(reason) {
+        const g = bg;
+        if (!g || g.over) return;
+        g.over = true;
+        clearInterval(fillTimer); fillTimer = null;
+
+        const total = g.qs.length, correct = g.correct;
+        const durationSec = Math.max(1, Math.round((Date.now() - g.t0) / 1000));
+        const pct = Math.round(correct / total * 100);
+        const timeUp = reason === 'time';
+
+        // บันทึกเฉพาะรอบที่ตอบไปอย่างน้อย 1 ข้อ
+        let saved = true;
+        if (g.answeredCount > 0) {
+          saved = saveHistory({
+            mode: 'fill',
+            total: g.answeredCount, correct, wrong: g.answeredCount - correct,
+            planned: total, timeUp,
+            durationSec,
+            wrongItemIds: g.wrongs.map(i => i.id)
+          });
+        }
+
+        $('bkFill').style.width = (g.answeredCount / total * 100) + '%';
+        showResult({
+          title: timeUp ? 'หมดเวลา' : 'จบเกมแล้ว',
+          glyph: timeUp ? '时' : '完',
+          main: correct, sub: `/ ${total}`,
+          msg: timeUp
+            ? `ตอบไป ${g.answeredCount} จาก ${total} ข้อ ถูก ${correct} ข้อ`
+            : `${pct}%  ` + gradeText(pct),
+          time: 'ใช้เวลา ' + fmtTime(durationSec),
+          saved, wrongs: g.wrongs, wrongLabel: 'คำที่ตอบผิด'
+        });
+      }
+
+      /* =====================================================
+         เกม: พลิกการ์ดจำตำแหน่ง
+         การ์ดคว่ำทั้งหมด พลิกทีละ 2 ใบ หาอักษรจีนที่คู่กับความหมาย
+         เวลานับถอยหลัง 45 วินาที จับคู่ถูกได้เวลาเพิ่ม 2 วินาที
+         ===================================================== */
+      let fg = null;
+      let lastFlipLayout = '';         // จำการจัดวางรอบก่อน เพื่อไม่ให้รอบใหม่เรียงซ้ำเดิม
+
+      function startFlip(opts) {
+        stopAll();
+        D = loadData();
+        const pool = poolFor(opts.scope);
+        const items = pickUnique(pool, opts.count);
+        if (items.length < 4) { openSetup('flip'); return; }
+
+        // การ์ด 2 ใบต่อ 1 รายการ: ใบอักษรจีน (h) และใบความหมาย (m) แล้วสุ่มตำแหน่งทั้งหมด
+        const base = [];
+        items.forEach(it => { base.push({ pid: it.id, kind: 'h', item: it }); base.push({ pid: it.id, kind: 'm', item: it }); });
+        const sig = a => a.map(c => c.pid + c.kind).join(',');
+        let cards;
+        for (let t = 0; t < 12; t++) {
+          cards = shuffle(base.slice());
+          if (sig(cards) !== lastFlipLayout) break;
+        }
+        lastFlipLayout = sig(cards);
+
+        lastRun = { id: 'flip', opts };
+        fg = {
+          opts, items, cards: cards.map(c => ({ ...c, open: false, done: false })),
+          picked: [], matched: 0, mistakes: 0, wrongIds: new Set(),
+          busy: false, over: false, finishing: false,
+          left: FLIP_START_SEC * 1000, last: performance.now(), t0: Date.now()
+        };
+        renderFlip();
+        show('vFlip');
+        flipTimer = setInterval(flipTick, 100);
+      }
+
+      // ตัวนับเวลาถอยหลังของเกมพลิกการ์ด
+      function flipTick() {
+        const g = fg;
+        if (!g || g.over || g.finishing) return;
+        const now = performance.now();
+        g.left -= now - g.last;
+        g.last = now;
+        if (g.left <= 0) { g.left = 0; updateFlipTime(); finishFlip(g, 'time'); return; }
+        updateFlipTime();
+      }
+      function updateFlipTime() {
+        const s = Math.ceil(fg.left / 1000);
+        $('fpTimeNum').textContent = s;
+        $('fpHudTimer').classList.toggle('low', s <= 10);
+      }
+      function updateFlipHud() {
+        $('fpStep').textContent = `จับคู่แล้ว ${fg.matched} / ${fg.items.length}`;
+        $('fpMiss').textContent = `พลาด ${fg.mistakes}`;
+        $('fpFill').style.width = (fg.matched / fg.items.length * 100) + '%';
+      }
+
+      function renderFlip() {
+        updateFlipTime();
+        updateFlipHud();
+        const board = $('fpBoard');
+        board.replaceChildren();
+        fg.cards.forEach((c, i) => {
+          const card = el('div', 'fcard');
+          card.dataset.i = i;
+          card.setAttribute('role', 'button');
+          card.tabIndex = 0;
+          card.setAttribute('aria-label', `การ์ดใบที่ ${i + 1} คว่ำอยู่`);
+
+          const inner = el('span', 'fcard-inner');
+          const back = el('span', 'fcard-face fcard-back', '学'); back.setAttribute('aria-hidden', 'true');
+          const front = el('span', 'fcard-face fcard-front');
+          if (c.kind === 'h') {
+            const h = el('span', 'fc-hanzi', c.item.hanzi); h.lang = 'zh-CN';
+            front.append(h);
+            if (c.item.pinyin) front.append(el('span', 'fc-pinyin', c.item.pinyin));
+          } else {
+            front.append(el('span', 'fc-meaning', c.item.meaning));
+          }
+          inner.append(back, front);
+          card.append(inner);
+          board.append(card);
+        });
+      }
+
+      const cardText = c => c.kind === 'h' ? (c.item.hanzi + (c.item.pinyin ? ' ' + c.item.pinyin : '')) : c.item.meaning;
+
+      function flipCard(i) {
+        const g = fg;
+        if (!g || g.over || g.finishing || g.busy) return;
+        const c = g.cards[i];
+        if (c.open || c.done) return;
+
+        const node = $('fpBoard').children[i];
+        c.open = true;
+        node.classList.add('flip');
+        node.setAttribute('aria-label', `การ์ดใบที่ ${i + 1} ${cardText(c)}`);
+        g.picked.push(i);
+        if (g.picked.length === 2) evaluateFlip(g);
+      }
+
+      $('fpBoard').addEventListener('click', e => {
+        const node = e.target.closest('.fcard');
+        if (node) flipCard(+node.dataset.i);
+      });
+      $('fpBoard').addEventListener('keydown', e => {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        const node = e.target.closest('.fcard');
+        if (!node) return;
+        e.preventDefault();
+        flipCard(+node.dataset.i);
+      });
+
+      function evaluateFlip(g) {
+        const [ia, ib] = g.picked;
+        const ca = g.cards[ia], cb = g.cards[ib];
+        const na = $('fpBoard').children[ia], nb = $('fpBoard').children[ib];
+        g.picked = [];
+
+        if (ca.pid === cb.pid && ca.kind !== cb.kind) {
+          // จับคู่ถูก: ค้างหน้าไว้ + เพิ่มเวลา
+          [ca, cb].forEach(c => { c.done = true; });
+          [na, nb].forEach(n => n.classList.add('done'));
+          g.matched++;
+          g.left += FLIP_BONUS_SEC * 1000;
+          flashBonus('fpBonus', FLIP_BONUS_SEC);
+          updateFlipTime();
+          updateFlipHud();
+          speak(ca.item.hanzi);
+          if (g.matched === g.items.length) {
+            g.finishing = true;                            // หยุดนับเวลาทันที แล้วรอให้เห็นการ์ดสุดท้ายก่อนขึ้นป๊อบอัพ
+            setTimeout(() => finishFlip(g, 'done'), 800);
+          }
+        } else {
+          g.mistakes++;
+          g.wrongIds.add(ca.pid); g.wrongIds.add(cb.pid);  // นับความผิดพลาดให้ทั้งสองรายการที่เปิดผิด
+          g.busy = true;
+          updateFlipHud();
+          // ให้การ์ดหมุนเสร็จก่อน ค่อยขึ้นสีแดงและสั่น
+          setTimeout(() => { if (fg === g) [na, nb].forEach(n => n.classList.add('bad')); }, 350);
+          setTimeout(() => {
+            if (fg !== g) return;
+            [na, nb].forEach(n => {
+              n.classList.remove('flip', 'bad');
+              n.setAttribute('aria-label', `การ์ดใบที่ ${+n.dataset.i + 1} คว่ำอยู่`);
+            });
+            ca.open = false; cb.open = false;
+            g.busy = false;
+          }, FLIP_HIDE_MS);
+        }
+      }
+
+      function finishFlip(g, reason) {
+        if (fg !== g || g.over) return;
+        g.over = true;
+        clearInterval(flipTimer); flipTimer = null;
+
+        const n = g.items.length, matched = g.matched, m = g.mistakes;
+        const durationSec = Math.max(1, Math.round((Date.now() - g.t0) / 1000));
+        const timeUp = reason === 'time';
+        const attempts = matched + m;                      // นับทุกครั้งที่พลิกครบ 2 ใบ ทั้งถูกและผิด
+
+        // บันทึกเฉพาะรอบที่ได้พลิกครบ 2 ใบอย่างน้อย 1 ครั้ง
+        let saved = true;
+        if (attempts > 0) {
+          saved = saveHistory({
+            mode: 'flip',
+            total: attempts, correct: matched, wrong: m,
+            planned: n, timeUp,
+            durationSec,
+            wrongItemIds: [...g.wrongIds]
+          });
+        }
+        const wrongs = g.items.filter(x => g.wrongIds.has(x.id));
+
+        showResult({
+          title: timeUp ? 'หมดเวลา' : 'จับคู่ครบแล้ว',
+          glyph: timeUp ? '时' : '完',
+          main: matched, sub: `/ ${n} คู่`,
+          msg: timeUp
+            ? `จับคู่ได้ ${matched} จาก ${n} คู่ พลาด ${m} ครั้ง`
+            : (m === 0 ? 'จำแม่นมาก ไม่พลาดเลย' : `พลาด ${m} ครั้ง ` + (m <= 3 ? 'เก่งมาก' : m <= 8 ? 'ดีแล้ว ทบทวนอีกนิดจะแม่นขึ้น' : 'ลองอีกรอบ จะจำตำแหน่งได้ดีขึ้น')),
+          time: 'ใช้เวลา ' + fmtTime(durationSec),
+          saved, wrongs, wrongLabel: 'คำที่จำผิด'
+        });
+      }
+
       /* ----- เริ่มต้น / อัปเดตเมื่อข้อมูลเปลี่ยน ----- */
       window.addEventListener('storage', e => {
         if ((e.key === KEY_ITEMS || e.key === KEY_SETS) && !$('vSetup').classList.contains('d-none')) refreshSetup();
       });
       window.addEventListener('pageshow', e => { if (e.persisted) { resModal.hide(); goMenu(); } });
+      // รายการเสียงในเครื่องโหลดเสร็จช้า พอโหลดเสร็จให้เช็กข้อความเตือนของเกมฟังใหม่
+      if (canSpeak) speechSynthesis.addEventListener('voiceschanged', () => {
+        if (curGame === 'listen' && !$('vSetup').classList.contains('d-none') && !$('gameBody').classList.contains('d-none')) updateInfo();
+      });
 
       renderMenu();
     })();
