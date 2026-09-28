@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>PJEENGame - เล่นเกม</title>
+
+  <!-- Bootstrap 5 + Bootstrap Icons + ฟอนต์ -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;700&family=Noto+Serif+SC:wght@700&display=swap" rel="stylesheet">
+
+  <!-- ============================================================
+       CSS ของหน้านี้
+       ส่วน [ส่วนกลาง] ใช้เหมือนกันทุกหน้า (เหมือน index.html / add.html / lessons.html)
+       ส่วน [เฉพาะหน้า] เปลี่ยนตามแต่ละหน้า
+       ============================================================ -->
+  <style>
+    /* ---------- [ส่วนกลาง] ตัวแปรสี / พื้นฐาน ---------- */
+    :root {
+      --paper: #EEF2EF;
+      --card:  #FFFFFF;
+      --ink:   #1D2B2A;
+      --muted: #64736F;
+      --line:  #D6DFDA;
+      --jade:  #2F7D6D;
+      --seal:  #C8372D;
+      --dock-h: 66px;
+    }
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: 'Noto Sans Thai', system-ui, sans-serif;
+      padding-bottom: calc(var(--dock-h) + 40px + env(safe-area-inset-bottom));
+      animation: pageIn .35s ease-out both;
+    }
+    @keyframes pageIn { from { opacity: 0; } to { opacity: 1; } }
+    .app-wrap { max-width: 720px; }
+    .hanzi { font-family: 'Noto Serif SC', serif; }
+
+    /* ---------- [ส่วนกลาง] Header + โลโก้ ---------- */
+    .topbar {
+      position: sticky; top: 0; z-index: 1020;
+      background: var(--paper);
+      border-bottom: 1px solid var(--line);
+      padding-top: env(safe-area-inset-top);
+    }
+    .brand { display: flex; align-items: center; gap: 10px; padding: 12px 0; text-decoration: none; color: var(--ink); }
+    .brand-mark {
+      width: 34px; height: 34px; border-radius: 6px;
+      background: var(--seal); color: #fff;
+      display: grid; place-items: center;
+      font-size: 20px; line-height: 1;
+      transform: rotate(-4deg);
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,.35);
+    }
+    .brand-name { font-size: 1.2rem; font-weight: 700; letter-spacing: .2px; }
+
+    /* ---------- [ส่วนกลาง] การ์ด / ปุ่ม ---------- */
+    .card-box {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+    }
+    .btn-seal {
+      background: var(--seal); color: #fff; border: 0;
+      border-radius: 12px; padding: .7rem 1.2rem; font-weight: 700;
+      transition: background .2s, transform .12s;
+    }
+    .btn-seal:hover { background: #B02F26; color: #fff; }
+    .btn-seal:active { transform: scale(.97); }
+    a:focus-visible, .btn:focus-visible { outline: 2px solid var(--jade); outline-offset: 2px; }
+
+    /* ---------- [ส่วนกลาง] Bottom Navbar ---------- */
+    .dock {
+      position: fixed; z-index: 1030;
+      left: 50%; transform: translateX(-50%);
+      bottom: calc(12px + env(safe-area-inset-bottom));
+      width: min(440px, calc(100% - 24px));
+      height: var(--dock-h);
+      padding: 6px;
+      display: flex;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: 0 8px 24px rgba(29, 43, 42, .12);
+    }
+    .dock-pill {
+      position: absolute; top: 6px; bottom: 6px; left: 6px;
+      width: calc((100% - 12px) / 5);
+      background: var(--ink);
+      border-radius: 18px;
+      transition: transform .38s cubic-bezier(.34, 1.4, .5, 1);
+    }
+    .dock-item {
+      position: relative; z-index: 1;
+      flex: 1 1 0;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--muted); text-decoration: none;
+      border-radius: 18px; overflow: hidden;
+      -webkit-tap-highlight-color: transparent;
+      transition: color .25s, transform .12s;
+    }
+    .dock-item:active { transform: scale(.92); }
+    .dock-item:focus-visible { outline: 2px solid var(--jade); outline-offset: -2px; }
+    .dock-item i {
+      font-size: 22px; line-height: 1;
+      transition: transform .3s cubic-bezier(.34, 1.56, .64, 1);
+    }
+    .dock-item .lbl {
+      position: absolute; bottom: 6px;
+      font-size: 11px; line-height: 1.2; font-weight: 500; white-space: nowrap;
+      opacity: 0; transform: translateY(5px);
+      transition: opacity .25s, transform .25s;
+    }
+    .dock-item.active { color: #fff; }
+    .dock-item.active i { transform: translateY(-8px); }
+    .dock-item.active .lbl { opacity: 1; transform: none; }
+    .ripple {
+      position: absolute; border-radius: 50%; pointer-events: none;
+      background: rgba(47, 125, 109, .28);
+      transform: scale(0);
+      animation: ripple .55s ease-out forwards;
+    }
+    .dock-item.active .ripple { background: rgba(255, 255, 255, .3); }
+    @keyframes ripple { to { transform: scale(1); opacity: 0; } }
+
+    /* ---------- [เฉพาะหน้า] หน้าเล่นเกม ---------- */
+    .page-title { font-size: 1.4rem; font-weight: 700; margin: 0; }
+    .page-sub   { color: var(--muted); margin: 0; }
+
+    .btn-ghost {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      background: #fff; color: var(--ink); text-decoration: none;
+      border: 1px solid var(--line); border-radius: 12px;
+      padding: .7rem 1.2rem; font-weight: 500;
+      transition: background .2s, transform .12s;
+    }
+    .btn-ghost:hover { background: #F6F9F7; color: var(--ink); }
+    .btn-ghost:active { transform: scale(.97); }
+    .btn-ghost:focus-visible { outline: 2px solid var(--jade); outline-offset: 2px; }
+
+    /* ตราแดง (ไอคอนเกม / ผลคะแนน) */
+    .seal {
+      flex: none; width: 52px; height: 52px; border-radius: 8px;
+      background: var(--seal); color: #fff;
+      display: grid; place-items: center;
+      font-size: 30px; line-height: 1;
+      transform: rotate(-3deg);
+      box-shadow: inset 0 0 0 3px rgba(255,255,255,.35);
+    }
+    .seal.lg { width: 76px; height: 76px; font-size: 44px; }
+
+    /* หน้าเลือกเกม */
+    .game-head { display: flex; gap: 14px; align-items: center; }
+    .game-title { font-size: 1.2rem; font-weight: 700; margin: 0; }
+    .game-desc  { color: var(--muted); font-size: .9rem; margin: 0; }
+    .game-sep   { border: 0; border-top: 1px solid var(--line); margin: 14px 0; opacity: 1; }
+    .field { margin-bottom: 14px; }
+    .field-label { font-weight: 500; margin-bottom: 4px; display: block; }
+    .form-select {
+      border: 1px solid var(--line); border-radius: 12px;
+      padding: .6rem .8rem; background-color: #fff; color: var(--ink);
+    }
+    .form-select:focus { border-color: var(--jade); box-shadow: 0 0 0 3px rgba(47, 125, 109, .2); }
+    .seg { display: flex; background: #E3EAE6; border-radius: 12px; padding: 4px; }
+    .seg label {
+      flex: 1; text-align: center; padding: .45rem; border-radius: 9px;
+      color: var(--muted); cursor: pointer; margin: 0;
+      transition: background .2s, color .2s, box-shadow .2s;
+    }
+    .seg .btn-check:checked + label { background: #fff; color: var(--ink); font-weight: 700; box-shadow: 0 1px 3px rgba(29, 43, 42, .15); }
+    .seg .btn-check:focus-visible + label { outline: 2px solid var(--jade); outline-offset: 1px; }
+    .info-line { color: var(--muted); font-size: .9rem; margin: 0 0 14px; }
+
+    .empty-box { text-align: center; padding: 28px 16px; border-style: dashed; }
+    .empty-box i { font-size: 1.8rem; color: var(--jade); }
+    .empty-title { font-weight: 700; margin: 6px 0 2px; }
+    .empty-sub { color: var(--muted); margin: 0 0 14px; }
+
+    /* ระหว่างเล่น */
+    .hud { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .hud-step { font-weight: 700; }
+    .hud-score {
+      font-size: .85rem; font-weight: 700; color: var(--jade); background: #fff;
+      border: 1px solid var(--line); border-radius: 999px; padding: 2px 12px;
+    }
+    .pbar { height: 6px; background: #DCE5E0; border-radius: 999px; overflow: hidden; margin-bottom: 14px; }
+    .pfill { height: 100%; width: 0; background: var(--jade); border-radius: 999px; transition: width .4s cubic-bezier(.22, 1, .36, 1); }
+
+    .enter { animation: qIn .3s ease-out both; }
+    @keyframes qIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+    .q-card { text-align: center; padding: 22px 16px; }
+    .q-label { color: var(--muted); font-size: .85rem; margin: 0 0 8px; }
+    .q-hanzi { font-family: 'Noto Serif SC', serif; font-size: 2.8rem; font-weight: 700; line-height: 1.3; margin: 0; word-break: break-word; }
+    .q-hanzi.is-sentence { font-size: 1.7rem; }
+    .q-pinyin { color: var(--jade); font-size: 1.1rem; margin: 4px 0 0; word-break: break-word; }
+    .q-thai   { color: var(--muted); margin: 0; word-break: break-word; }
+    .speak-btn {
+      margin-top: 14px; display: inline-flex; align-items: center; gap: 6px;
+      background: #fff; color: var(--jade); border: 1px solid var(--jade);
+      border-radius: 999px; padding: .4rem 1rem; font-weight: 500;
+      transition: background .2s, color .2s, transform .12s;
+    }
+    .speak-btn:hover { background: var(--jade); color: #fff; }
+    .speak-btn:active { transform: scale(.96); }
+    .speak-btn:focus-visible { outline: 2px solid var(--jade); outline-offset: 2px; }
+
+    .q-ask { font-weight: 700; margin: 18px 0 8px; }
+    .choices { display: flex; flex-direction: column; gap: 10px; }
+    .choice {
+      display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+      background: #fff; color: var(--ink);
+      border: 1.5px solid var(--line); border-radius: 14px; padding: .8rem 1rem;
+      transition: border-color .2s, background .2s, opacity .2s, transform .12s;
+    }
+    .choice:hover:not(:disabled) { border-color: var(--jade); }
+    .choice:active:not(:disabled) { transform: scale(.985); }
+    .choice:focus-visible { outline: 2px solid var(--jade); outline-offset: 2px; }
+    .choice:disabled { color: var(--ink); cursor: default; }
+    .choice-tag {
+      flex: none; width: 30px; height: 30px; border-radius: 50%;
+      background: var(--paper); color: var(--muted);
+      display: grid; place-items: center; font-size: .9rem; font-weight: 700;
+    }
+    .choice-text { flex: 1; min-width: 0; word-break: break-word; }
+    .choice-mark { flex: none; font-size: 1.25rem; opacity: 0; }
+    .choice.dim { opacity: .55; }
+    .choice.correct { background: #E8F2EF; border-color: var(--jade); animation: pop .3s ease-out; }
+    .choice.correct .choice-tag { background: var(--jade); color: #fff; }
+    .choice.correct .choice-mark { opacity: 1; color: var(--jade); }
+    .choice.wrong { background: #FBECEA; border-color: var(--seal); animation: shake .35s; }
+    .choice.wrong .choice-tag { background: var(--seal); color: #fff; }
+    .choice.wrong .choice-mark { opacity: 1; color: var(--seal); }
+    @keyframes pop   { 50% { transform: scale(1.02); } }
+    @keyframes shake { 20% { transform: translateX(-6px); } 50% { transform: translateX(6px); } 80% { transform: translateX(-3px); } }
+
+    #nextBtn { margin-top: 14px; scroll-margin-bottom: calc(var(--dock-h) + 30px); }
+
+    /* สรุปผล */
+    .score { font-size: 2.6rem; font-weight: 700; line-height: 1.2; margin: 12px 0 0; }
+    .score small { font-size: 1.1rem; font-weight: 500; color: var(--muted); }
+    .res-msg  { font-weight: 500; margin: 4px 0 0; }
+    .res-time { color: var(--muted); font-size: .9rem; margin: 2px 0 0; }
+    .miss-title { font-weight: 700; margin: 0 0 8px; }
+    .list { display: flex; flex-direction: column; gap: 10px; }
+    .miss { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 14px; }
+    .miss-hanzi { font-family: 'Noto Serif SC', serif; font-size: 1.4rem; font-weight: 700; line-height: 1.3; margin: 0; word-break: break-word; }
+    .miss-pinyin { color: var(--jade); font-size: .95rem; margin: 0; word-break: break-word; }
+    .miss-meaning { font-weight: 500; margin: 2px 0 0; word-break: break-word; }
+    .icon-btn {
+      width: 40px; height: 40px; border: 0; border-radius: 10px; flex: none;
+      background: transparent; color: var(--muted); font-size: 1.2rem;
+      display: grid; place-items: center;
+      transition: background .2s, color .2s, transform .12s;
+    }
+    .icon-btn:hover { background: var(--paper); color: var(--ink); }
+    .icon-btn:active { transform: scale(.9); }
+    .icon-btn:focus-visible { outline: 2px solid var(--jade); outline-offset: 1px; }
+    .notice {
+      background: #FBECEA; border: 1px solid #EFC3BE; border-radius: 12px;
+      padding: 10px 14px; margin: 14px 0 0; font-size: .9rem; text-align: left;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ================= [ส่วนกลาง] Header + โลโก้ ================= -->
+  <header class="topbar">
+    <div class="container app-wrap">
+      <a class="brand" href="index.html" aria-label="PJEENGame หน้าหลัก">
+        <span class="brand-mark hanzi" aria-hidden="true">学</span>
+        <span class="brand-name">PJEENGame</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- ================= [เฉพาะหน้า] เนื้อหาหน้าเล่นเกม ================= -->
+  <main class="container app-wrap py-3">
+
+    <!-- ===== หน้าเลือกเกม / ตั้งค่า ===== -->
+    <section id="vStart">
+      <div class="mb-3">
+        <h1 class="page-title">เล่นเกม</h1>
+        <p class="page-sub">ฝึกจากคำศัพท์ในบทเรียนของคุณ</p>
+      </div>
+
+      <!-- ยังมีข้อมูลไม่พอ -->
+      <section class="card-box empty-box d-none" id="needMore">
+        <i class="bi bi-journal-plus"></i>
+        <p class="empty-title">ยังมีคำในบทเรียนไม่พอ</p>
+        <p class="empty-sub">ต้องมีอย่างน้อย 4 รายการที่ความหมายไม่ซ้ำกัน เพื่อทำตัวเลือก 4 ข้อ ตอนนี้มี <span id="needCount">0</span> รายการ</p>
+        <a class="btn btn-seal" href="add.html">เพิ่มคำศัพท์</a>
+      </section>
+
+      <!-- เกม: ตอบคำถาม
+           ถ้าจะเพิ่มเกมใหม่ในอนาคต ให้ทำการ์ดแบบนี้เพิ่ม แล้วเขียนตัวเกมแยกในส่วน JS -->
+      <section class="card-box" id="gameBody">
+        <div class="game-head">
+          <div class="seal hanzi" aria-hidden="true">问</div>
+          <div>
+            <p class="game-title">ตอบคำถาม</p>
+            <p class="game-desc">ดูอักษรจีนและพินอิน แล้วเลือกความหมายไทยที่ถูกจาก 4 ตัวเลือก</p>
+          </div>
+        </div>
+        <hr class="game-sep">
+
+        <div class="field">
+          <label class="field-label" for="scope">เล่นจาก</label>
+          <select class="form-select" id="scope"></select>
+        </div>
+
+        <div class="field">
+          <span class="field-label" id="cntLabel">จำนวนข้อ</span>
+          <div class="seg" role="radiogroup" aria-labelledby="cntLabel">
+            <input class="btn-check" type="radio" name="cnt" id="cnt5" value="5">
+            <label for="cnt5">5 ข้อ</label>
+            <input class="btn-check" type="radio" name="cnt" id="cnt10" value="10" checked>
+            <label for="cnt10">10 ข้อ</label>
+            <input class="btn-check" type="radio" name="cnt" id="cnt15" value="15">
+            <label for="cnt15">15 ข้อ</label>
+          </div>
+        </div>
+
+        <p class="info-line" id="infoLine"></p>
+        <button type="button" class="btn btn-seal w-100" id="startBtn">เริ่มเล่น</button>
+      </section>
+    </section>
+
+    <!-- ===== ระหว่างเล่น ===== -->
+    <section id="vPlay" class="d-none">
+      <div class="hud">
+        <span class="hud-step" id="hudStep"></span>
+        <span class="hud-score" id="hudScore"></span>
+      </div>
+      <div class="pbar" role="progressbar" aria-label="ความคืบหน้า"><div class="pfill" id="pfill"></div></div>
+
+      <div id="qWrap">
+        <section class="card-box q-card">
+          <p class="q-label">โจทย์</p>
+          <p class="q-hanzi" id="qHanzi" lang="zh-CN"></p>
+          <p class="q-pinyin" id="qPinyin"></p>
+          <p class="q-thai" id="qThai"></p>
+          <button type="button" class="speak-btn" id="speakQ"><i class="bi bi-volume-up"></i> ฟังเสียง</button>
+        </section>
+
+        <p class="q-ask">เลือกความหมายไทยที่ถูกต้อง</p>
+        <div class="choices" id="choices"></div>
+      </div>
+
+      <div class="visually-hidden" id="fb" role="status" aria-live="polite"></div>
+      <button type="button" class="btn btn-seal w-100" id="nextBtn" style="visibility:hidden">ข้อต่อไป</button>
+    </section>
+
+    <!-- ===== สรุปผล ===== -->
+    <section id="vResult" class="d-none">
+      <section class="card-box text-center">
+        <div class="seal lg hanzi mx-auto" aria-hidden="true">完</div>
+        <p class="score"><span id="resCorrect"></span> <small>/ <span id="resTotal"></span></small></p>
+        <p class="res-msg" id="resMsg"></p>
+        <p class="res-time" id="resTime"></p>
+        <div class="notice d-none" id="saveNote" role="alert">บันทึกสถิติไม่สำเร็จ พื้นที่เก็บข้อมูลของเบราว์เซอร์อาจเต็มหรือถูกปิดไว้</div>
+      </section>
+
+      <section class="mt-3 d-none" id="missWrap">
+        <p class="miss-title" id="missTitle"></p>
+        <div class="list" id="missList"></div>
+      </section>
+
+      <div class="d-flex gap-2 mt-3">
+        <button type="button" class="btn btn-seal flex-fill" id="againBtn">เล่นอีกครั้ง</button>
+        <button type="button" class="btn-ghost" id="menuBtn">เลือกเกม</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ================= [ส่วนกลาง] Bottom Navbar ================= -->
+  <nav class="dock" aria-label="เมนูหลัก">
+    <span class="dock-pill" aria-hidden="true"></span>
+    <a class="dock-item" href="index.html"><i class="bi bi-house-door"></i><span class="lbl">หลัก</span></a>
+    <a class="dock-item" href="game.html"><i class="bi bi-controller"></i><span class="lbl">เล่นเกม</span></a>
+    <a class="dock-item" href="lessons.html"><i class="bi bi-journal-text"></i><span class="lbl">บทเรียน</span></a>
+    <a class="dock-item" href="stats.html"><i class="bi bi-bar-chart-line"></i><span class="lbl">สถิติ</span></a>
+    <a class="dock-item" href="add.html"><i class="bi bi-plus-circle"></i><span class="lbl">เพิ่ม</span></a>
+  </nav>
+
+  <!-- ============================================================
+       JavaScript
+       ส่วน [ส่วนกลาง] = ระบบ navbar ใช้เหมือนกันทุกหน้า
+       ส่วน [เฉพาะหน้า] = เกมตอบคำถาม
+       ============================================================ -->
+  <script>
+    /* ---------- [ส่วนกลาง] ระบบ Bottom Navbar ---------- */
+    (function () {
+      const dock  = document.querySelector('.dock');
+      const pill  = dock.querySelector('.dock-pill');
+      const items = [...dock.querySelectorAll('.dock-item')];
+
+      const file = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+      let cur = items.findIndex(a => a.getAttribute('href').toLowerCase() === file);
+      if (cur < 0) cur = 0;
+
+      function setActive(i) {
+        items.forEach((a, j) => {
+          a.classList.toggle('active', j === i);
+          if (j === i) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+        });
+        pill.style.transform = `translateX(${i * 100}%)`;
+      }
+
+      pill.style.transition = 'none';
+      setActive(cur);
+      pill.offsetWidth;
+      pill.style.transition = '';
+
+      function ripple(el, e) {
+        const r = el.getBoundingClientRect();
+        const size = Math.max(r.width, r.height) * 1.6;
+        const s = document.createElement('span');
+        s.className = 'ripple';
+        s.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX - r.left - size / 2}px;top:${e.clientY - r.top - size / 2}px`;
+        el.appendChild(s);
+        s.addEventListener('animationend', () => s.remove());
+      }
+
+      const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      items.forEach((a, i) => {
+        a.addEventListener('pointerdown', e => ripple(a, e));
+        a.addEventListener('click', e => {
+          if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+          e.preventDefault();
+          if (i === cur) return;
+          setActive(i);
+          setTimeout(() => { location.href = a.href; }, reduce ? 0 : 260);
+        });
+      });
+
+      window.addEventListener('pageshow', e => { if (e.persisted) setActive(cur); });
+    })();
+
+
+    /* ---------- [เฉพาะหน้า] เกม: ตอบคำถาม ---------- */
+    (function () {
+      const KEY_ITEMS   = 'pjee_items';
+      const KEY_SETS    = 'pjee_sets';
+      const KEY_HISTORY = 'pjee_history';
+      const NONE = '_none';                          // รายการเก่าที่ไม่มีชุด
+      const TAGS = ['ก', 'ข', 'ค', 'ง'];
+
+      const read = k => {
+        try { const v = JSON.parse(localStorage.getItem(k)); return Array.isArray(v) ? v : []; }
+        catch (e) { return []; }
+      };
+      const write = (k, list) => {
+        try { localStorage.setItem(k, JSON.stringify(list)); return true; }
+        catch (e) { return false; }
+      };
+      const $ = id => document.getElementById(id);
+      const el = (tag, cls, text) => {
+        const e = document.createElement(tag);
+        if (cls) e.className = cls;
+        if (text != null) e.textContent = text;
+        return e;
+      };
+      const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const canSpeak = 'speechSynthesis' in window;
+      const key = s => String(s || '').trim().replace(/\s+/g, ' ').toLowerCase();   // ใช้เทียบว่าความหมายซ้ำกันไหม
+      const typeOf = it => it.type === 'sentence' ? 'sentence' : 'word';
+      const pad = n => String(n).padStart(2, '0');
+      const dayKey = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;   // YYYY-MM-DD ตามเวลาเครื่อง
+
+      function shuffle(a) {
+        for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+      }
+
+      function speak(text) {
+        if (!canSpeak) return;
+        speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'zh-CN';
+        u.rate = 0.85;
+        speechSynthesis.speak(u);
+      }
+
+      /* ----- อ่านข้อมูลจากบทเรียน จัดเป็นชุด ----- */
+      function loadData() {
+        const sets = read(KEY_SETS);
+        const items = read(KEY_ITEMS).filter(i => i && i.id && String(i.hanzi || '').trim() && String(i.meaning || '').trim());
+        const map = new Map();
+        sets.forEach(s => { if (s && s.id) map.set(s.id, { id: s.id, name: String(s.name || 'ชุดไม่มีชื่อ'), items: [] }); });
+        const orphan = { id: NONE, name: 'รายการเดิม (ยังไม่อยู่ในชุด)', items: [] };
+        items.forEach(i => { (map.get(i.setId) || orphan).items.push(i); });
+        const groups = [...map.values()].filter(g => g.items.length);
+        if (orphan.items.length) groups.push(orphan);
+        return { items, groups };
+      }
+
+      /* ----- สร้างโจทย์: คำตอบที่ถูก + ตัวหลอก 3 ข้อ (เลือกประเภทเดียวกันก่อน) ----- */
+      function makeQuestions(pool, all, n) {
+        return shuffle(pool.slice()).slice(0, n).map(it => {
+          const others = all.filter(x => x.id !== it.id && key(x.meaning) !== key(it.meaning));
+          const same = shuffle(others.filter(x => typeOf(x) === typeOf(it)));
+          const rest = shuffle(others.filter(x => typeOf(x) !== typeOf(it)));
+          const seen = new Set([key(it.meaning)]);
+          const wrong = [];
+          for (const x of same.concat(rest)) {
+            const k = key(x.meaning);
+            if (seen.has(k)) continue;
+            seen.add(k);
+            wrong.push(x.meaning);
+            if (wrong.length === 3) break;
+          }
+          return { item: it, answer: it.meaning, choices: shuffle([it.meaning, ...wrong]) };
+        });
+      }
+
+      const show = id => {
+        ['vStart', 'vPlay', 'vResult'].forEach(v => $(v).classList.toggle('d-none', v !== id));
+        window.scrollTo(0, 0);
+      };
+
+      /* ===================== หน้าตั้งค่า ===================== */
+      let D = loadData();
+
+      function poolFor(scope) {
+        if (scope === 'all') return D.items;
+        const g = D.groups.find(x => x.id === scope);
+        return g ? g.items : D.items;
+      }
+      function chosenCount() { return +document.querySelector('input[name="cnt"]:checked').value; }
+
+      function updateInfo() {
+        const pool = poolFor($('scope').value);
+        const n = Math.min(chosenCount(), pool.length);
+        $('infoLine').textContent = `จะได้เล่น ${n} ข้อ จากทั้งหมด ${pool.length} รายการ`;
+      }
+
+      function refreshStart() {
+        D = loadData();
+        const distinct = new Set(D.items.map(i => key(i.meaning))).size;
+        const ok = distinct >= 4;
+        $('needMore').classList.toggle('d-none', ok);
+        $('gameBody').classList.toggle('d-none', !ok);
+        $('needCount').textContent = D.items.length;
+        if (!ok) return;
+
+        const sel = $('scope'), prev = sel.value;
+        sel.replaceChildren();
+        const add = (v, t) => { const o = el('option', '', t); o.value = v; sel.append(o); };
+        add('all', `ทุกชุด (${D.items.length} รายการ)`);
+        D.groups.forEach(g => add(g.id, `${g.name} (${g.items.length})`));
+        sel.value = [...sel.options].some(o => o.value === prev) ? prev : 'all';
+        updateInfo();
+      }
+
+      $('scope').addEventListener('change', updateInfo);
+      document.querySelectorAll('input[name="cnt"]').forEach(r => r.addEventListener('change', updateInfo));
+      $('startBtn').addEventListener('click', () => startQuiz({ scope: $('scope').value, count: chosenCount() }));
+
+      /* ===================== ตัวเกม ===================== */
+      let game = null;
+
+      function startQuiz(opts) {
+        D = loadData();
+        const pool = poolFor(opts.scope);
+        if (!pool.length || new Set(D.items.map(i => key(i.meaning))).size < 4) { refreshStart(); show('vStart'); return; }
+        const qs = makeQuestions(pool, D.items, Math.min(opts.count, pool.length));
+        game = { opts, qs, i: 0, correct: 0, wrongs: [], answered: false, t0: Date.now() };
+        show('vPlay');
+        renderQ();
+      }
+
+      function renderQ() {
+        const q = game.qs[game.i], it = q.item, total = game.qs.length;
+        game.answered = false;
+
+        $('hudStep').textContent = `ข้อ ${game.i + 1} / ${total}`;
+        $('hudScore').textContent = `ถูก ${game.correct}`;
+        $('pfill').style.width = (game.i / total * 100) + '%';
+
+        const h = $('qHanzi');
+        h.textContent = it.hanzi;
+        h.classList.toggle('is-sentence', typeOf(it) === 'sentence');
+        $('qPinyin').textContent = it.pinyin || '';
+        $('qThai').textContent = it.thaiReading || '';
+        $('speakQ').classList.toggle('d-none', !canSpeak);
+
+        const box = $('choices');
+        box.replaceChildren();
+        q.choices.forEach((c, idx) => {
+          const b = el('button', 'choice');
+          b.type = 'button';
+          b.dataset.idx = idx;
+          const mark = el('i', 'bi choice-mark');
+          mark.setAttribute('aria-hidden', 'true');
+          b.append(el('span', 'choice-tag', TAGS[idx]), el('span', 'choice-text', c), mark);
+          box.append(b);
+        });
+
+        $('fb').textContent = '';
+        const nb = $('nextBtn');
+        nb.style.visibility = 'hidden';
+        nb.textContent = game.i === total - 1 ? 'ดูผลคะแนน' : 'ข้อต่อไป';
+
+        // เล่นแอนิเมชันเข้าของโจทย์ใหม่
+        const w = $('qWrap');
+        w.classList.remove('enter'); void w.offsetWidth; w.classList.add('enter');
+      }
+
+      function answer(idx) {
+        if (!game || game.answered) return;
+        game.answered = true;
+        const q = game.qs[game.i];
+        const ok = q.choices[idx] === q.answer;
+
+        [...$('choices').children].forEach((b, j) => {
+          b.disabled = true;
+          const mark = b.querySelector('.choice-mark');
+          if (q.choices[j] === q.answer) { b.classList.add('correct'); mark.classList.add('bi-check-circle-fill'); }
+          else if (j === idx)            { b.classList.add('wrong');   mark.classList.add('bi-x-circle-fill'); }
+          else                           { b.classList.add('dim'); }
+        });
+
+        if (ok) game.correct++; else game.wrongs.push(q.item);
+        $('hudScore').textContent = `ถูก ${game.correct}`;
+        $('fb').textContent = ok ? 'ถูกต้อง' : 'ผิด คำตอบที่ถูกคือ ' + q.answer;
+
+        const nb = $('nextBtn');
+        nb.style.visibility = 'visible';
+        nb.focus({ preventScroll: true });
+        nb.scrollIntoView({ block: 'nearest', behavior: reduce ? 'auto' : 'smooth' });
+      }
+
+      $('choices').addEventListener('click', e => {
+        const b = e.target.closest('.choice');
+        if (b) answer(+b.dataset.idx);
+      });
+      // กดเลข 1-4 บนคีย์บอร์ดเพื่อเลือกคำตอบ
+      document.addEventListener('keydown', e => {
+        if (!game || $('vPlay').classList.contains('d-none') || game.answered) return;
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+        const n = parseInt(e.key, 10);
+        if (n >= 1 && n <= 4 && n <= game.qs[game.i].choices.length) answer(n - 1);
+      });
+      $('speakQ').addEventListener('click', () => { if (game) speak(game.qs[game.i].item.hanzi); });
+      $('nextBtn').addEventListener('click', () => {
+        if (!game || !game.answered) return;
+        game.i++;
+        if (game.i >= game.qs.length) finish(); else renderQ();
+      });
+
+      /* ===================== สรุปผล ===================== */
+      const fmtTime = s => s < 60 ? `${s} วินาที` : `${Math.floor(s / 60)} นาที ${s % 60} วินาที`;
+
+      function finish() {
+        const total = game.qs.length, correct = game.correct;
+        const durationSec = Math.max(1, Math.round((Date.now() - game.t0) / 1000));
+        const pct = Math.round(correct / total * 100);
+
+        // บันทึกลงประวัติ (หน้าสถิติและหน้าหลักอ่านจากตรงนี้)
+        const hist = read(KEY_HISTORY);
+        hist.push({
+          id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+          date: dayKey(new Date()),
+          playedAt: new Date().toISOString(),
+          mode: 'quiz',
+          total, correct, wrong: total - correct,
+          durationSec,
+          wrongItemIds: game.wrongs.map(i => i.id)
+        });
+        const saved = write(KEY_HISTORY, hist);
+
+        $('resCorrect').textContent = correct;
+        $('resTotal').textContent = total;
+        $('resMsg').textContent = `${pct}%  ` + (pct === 100 ? 'ถูกทุกข้อ ยอดเยี่ยม' : pct >= 80 ? 'เก่งมาก' : pct >= 60 ? 'ดีแล้ว ทบทวนอีกนิดจะแม่นขึ้น' : 'ลองอีกรอบ จะจำได้มากขึ้น');
+        $('resTime').textContent = 'ใช้เวลา ' + fmtTime(durationSec);
+        $('saveNote').classList.toggle('d-none', saved);
+
+        // รายการที่ตอบผิด
+        const list = $('missList');
+        list.replaceChildren();
+        $('missWrap').classList.toggle('d-none', game.wrongs.length === 0);
+        $('missTitle').textContent = `คำที่ตอบผิด (${game.wrongs.length})`;
+        game.wrongs.forEach(it => {
+          const card = el('article', 'card-box miss');
+          const left = el('div', 'min-w-0');
+          const h = el('p', 'miss-hanzi', it.hanzi); h.lang = 'zh-CN';
+          left.append(h, el('p', 'miss-pinyin', it.pinyin || ''), el('p', 'miss-meaning', it.meaning));
+          card.append(left);
+          if (canSpeak) {
+            const b = el('button', 'icon-btn');
+            b.type = 'button'; b.setAttribute('aria-label', 'ฟังเสียง');
+            b.innerHTML = '<i class="bi bi-volume-up"></i>';
+            b.addEventListener('click', () => speak(it.hanzi));
+            card.append(b);
+          }
+          list.append(card);
+        });
+
+        $('pfill').style.width = '100%';
+        show('vResult');
+      }
+
+      $('againBtn').addEventListener('click', () => startQuiz(game.opts));
+      $('menuBtn').addEventListener('click', () => { refreshStart(); show('vStart'); });
+
+      /* ----- เริ่มต้น / อัปเดตเมื่อข้อมูลเปลี่ยน ----- */
+      window.addEventListener('storage', e => {
+        if ((e.key === KEY_ITEMS || e.key === KEY_SETS) && !$('vStart').classList.contains('d-none')) refreshStart();
+      });
+      window.addEventListener('pageshow', e => { if (e.persisted) { refreshStart(); show('vStart'); } });
+
+      refreshStart();
+    })();
+  </script>
+</body>
+</html>
