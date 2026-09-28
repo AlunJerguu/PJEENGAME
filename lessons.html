@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>PJEENGame - บทเรียน</title>
+
+  <!-- Bootstrap 5 + Bootstrap Icons + ฟอนต์ -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;700&family=Noto+Serif+SC:wght@700&display=swap" rel="stylesheet">
+
+  <!-- ============================================================
+       CSS ของหน้านี้
+       ส่วน [ส่วนกลาง] ใช้เหมือนกันทุกหน้า (เหมือน index.html / add.html)
+       ส่วน [เฉพาะหน้า] เปลี่ยนตามแต่ละหน้า
+       ============================================================ -->
+  <style>
+    /* ---------- [ส่วนกลาง] ตัวแปรสี / พื้นฐาน ---------- */
+    :root {
+      --paper: #EEF2EF;
+      --card:  #FFFFFF;
+      --ink:   #1D2B2A;
+      --muted: #64736F;
+      --line:  #D6DFDA;
+      --jade:  #2F7D6D;
+      --seal:  #C8372D;
+      --dock-h: 66px;
+    }
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: 'Noto Sans Thai', system-ui, sans-serif;
+      padding-bottom: calc(var(--dock-h) + 40px + env(safe-area-inset-bottom));
+      animation: pageIn .35s ease-out both;
+    }
+    @keyframes pageIn { from { opacity: 0; } to { opacity: 1; } }
+    .app-wrap { max-width: 720px; }
+    .hanzi { font-family: 'Noto Serif SC', serif; }
+
+    /* ---------- [ส่วนกลาง] Header + โลโก้ ---------- */
+    .topbar {
+      position: sticky; top: 0; z-index: 1020;
+      background: var(--paper);
+      border-bottom: 1px solid var(--line);
+      padding-top: env(safe-area-inset-top);
+    }
+    .brand { display: flex; align-items: center; gap: 10px; padding: 12px 0; text-decoration: none; color: var(--ink); }
+    .brand-mark {
+      width: 34px; height: 34px; border-radius: 6px;
+      background: var(--seal); color: #fff;
+      display: grid; place-items: center;
+      font-size: 20px; line-height: 1;
+      transform: rotate(-4deg);
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,.35);
+    }
+    .brand-name { font-size: 1.2rem; font-weight: 700; letter-spacing: .2px; }
+
+    /* ---------- [ส่วนกลาง] การ์ด / ปุ่ม ---------- */
+    .card-box {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+    }
+    .btn-seal {
+      background: var(--seal); color: #fff; border: 0;
+      border-radius: 12px; padding: .7rem 1.2rem; font-weight: 700;
+      transition: background .2s, transform .12s;
+    }
+    .btn-seal:hover { background: #B02F26; color: #fff; }
+    .btn-seal:active { transform: scale(.97); }
+    a:focus-visible, .btn:focus-visible { outline: 2px solid var(--jade); outline-offset: 2px; }
+
+    /* ---------- [ส่วนกลาง] Bottom Navbar ---------- */
+    .dock {
+      position: fixed; z-index: 1030;
+      left: 50%; transform: translateX(-50%);
+      bottom: calc(12px + env(safe-area-inset-bottom));
+      width: min(440px, calc(100% - 24px));
+      height: var(--dock-h);
+      padding: 6px;
+      display: flex;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: 0 8px 24px rgba(29, 43, 42, .12);
+    }
+    .dock-pill {
+      position: absolute; top: 6px; bottom: 6px; left: 6px;
+      width: calc((100% - 12px) / 5);
+      background: var(--ink);
+      border-radius: 18px;
+      transition: transform .38s cubic-bezier(.34, 1.4, .5, 1);
+    }
+    .dock-item {
+      position: relative; z-index: 1;
+      flex: 1 1 0;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--muted); text-decoration: none;
+      border-radius: 18px; overflow: hidden;
+      -webkit-tap-highlight-color: transparent;
+      transition: color .25s, transform .12s;
+    }
+    .dock-item:active { transform: scale(.92); }
+    .dock-item:focus-visible { outline: 2px solid var(--jade); outline-offset: -2px; }
+    .dock-item i {
+      font-size: 22px; line-height: 1;
+      transition: transform .3s cubic-bezier(.34, 1.56, .64, 1);
+    }
+    .dock-item .lbl {
+      position: absolute; bottom: 6px;
+      font-size: 11px; line-height: 1.2; font-weight: 500; white-space: nowrap;
+      opacity: 0; transform: translateY(5px);
+      transition: opacity .25s, transform .25s;
+    }
+    .dock-item.active { color: #fff; }
+    .dock-item.active i { transform: translateY(-8px); }
+    .dock-item.active .lbl { opacity: 1; transform: none; }
+    .ripple {
+      position: absolute; border-radius: 50%; pointer-events: none;
+      background: rgba(47, 125, 109, .28);
+      transform: scale(0);
+      animation: ripple .55s ease-out forwards;
+    }
+    .dock-item.active .ripple { background: rgba(255, 255, 255, .3); }
+    @keyframes ripple { to { transform: scale(1); opacity: 0; } }
+
+    /* ---------- [เฉพาะหน้า] หน้าบทเรียน (แสดงเป็นชุด) ---------- */
+    .page-title { font-size: 1.4rem; font-weight: 700; margin: 0; word-break: break-word; }
+    .page-sub   { color: var(--muted); margin: 0; }
+    .min-w-0 { min-width: 0; }
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #fff; color: var(--ink); text-decoration: none;
+      border: 1px solid var(--line); border-radius: 12px;
+      padding: .45rem .9rem; font-weight: 500;
+      transition: background .2s, transform .12s;
+    }
+    .btn-ghost:hover { background: #F6F9F7; color: var(--ink); }
+    .btn-ghost:active { transform: scale(.97); }
+    .back { display: inline-flex; align-items: center; gap: 4px; color: var(--muted); text-decoration: none; padding: 2px 0; }
+    .back:hover { color: var(--ink); }
+
+    /* ช่องกรอก / ค้นหา / สวิตช์ */
+    .search { position: relative; }
+    .search i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+    .search .form-control { padding-left: 2.5rem; }
+    .form-control {
+      border: 1px solid var(--line); border-radius: 12px;
+      padding: .6rem .8rem; background: #fff; color: var(--ink);
+    }
+    .form-control:focus { border-color: var(--jade); box-shadow: 0 0 0 3px rgba(47, 125, 109, .2); background: #fff; color: var(--ink); }
+    .form-control::placeholder { color: #A9B7B2; }
+    textarea.form-control { resize: none; overflow: hidden; }
+    .form-control.is-invalid { border-color: var(--seal); background-image: none; padding-right: .8rem; }
+    .form-control.is-invalid:focus { box-shadow: 0 0 0 3px rgba(200, 55, 45, .18); }
+    .invalid-feedback { color: var(--seal); font-size: .85rem; }
+    .in-hanzi { font-family: 'Noto Serif SC', 'Noto Sans Thai', serif; font-size: 1.3rem; }
+    .field { margin-bottom: 14px; }
+    .field-label { font-weight: 500; margin-bottom: 4px; display: block; }
+
+    .seg { display: flex; background: #E3EAE6; border-radius: 12px; padding: 4px; }
+    .seg label {
+      flex: 1; text-align: center; padding: .45rem; border-radius: 9px;
+      color: var(--muted); cursor: pointer; margin: 0;
+      transition: background .2s, color .2s, box-shadow .2s;
+    }
+    .seg .btn-check:checked + label { background: #fff; color: var(--ink); font-weight: 700; box-shadow: 0 1px 3px rgba(29, 43, 42, .15); }
+    .seg .btn-check:focus-visible + label { outline: 2px solid var(--jade); outline-offset: 1px; }
+
+    .list { display: flex; flex-direction: column; gap: 10px; }
+
+    /* การ์ดชุด (หน้ารวมทุกชุด) */
+    .setcard { display: block; color: inherit; text-decoration: none; transition: border-color .2s, transform .12s; }
+    .setcard:hover { border-color: var(--jade); color: inherit; }
+    .setcard:active { transform: scale(.99); }
+    .setcard:focus-visible { outline: 2px solid var(--jade); outline-offset: 2px; }
+    .set-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .set-name { font-size: 1.15rem; font-weight: 700; word-break: break-word; }
+    .set-top i { color: var(--muted); flex: none; }
+    .set-meta { display: flex; flex-wrap: wrap; gap: 0 12px; font-size: .9rem; margin-top: 2px; }
+    .set-count { font-weight: 500; }
+    .set-parts { color: var(--muted); }
+    .strip { display: flex; gap: 6px; margin-top: 10px; overflow: hidden; }
+    .strip-chip {
+      flex: none; max-width: 7em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      font-family: 'Noto Serif SC', serif; font-size: 1rem;
+      background: var(--paper); border-radius: 8px; padding: 2px 10px;
+    }
+    .strip-more { flex: none; align-self: center; color: var(--muted); font-size: .85rem; }
+    .set-date { color: var(--muted); font-size: .8rem; margin: 8px 0 0; }
+
+    /* การ์ดคำ/ประโยค */
+    .item-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+    .item-hanzi { font-family: 'Noto Serif SC', serif; font-size: 2.2rem; font-weight: 700; line-height: 1.3; margin: 0; word-break: break-word; }
+    .item.is-sentence .item-hanzi { font-size: 1.5rem; }
+    .item-badge {
+      flex: none; font-size: .75rem; font-weight: 500;
+      border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; color: var(--jade);
+    }
+    .item-pinyin  { color: var(--jade); font-size: 1.05rem; margin: 0; word-break: break-word; }
+    .item-thai    { color: var(--muted); margin: 0; word-break: break-word; }
+    .item-meaning { font-weight: 500; margin: 4px 0 0; word-break: break-word; }
+    .item-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--line); }
+    .item-cat  { color: var(--muted); font-size: .85rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .item-actions { display: flex; gap: 2px; flex: none; }
+    .icon-btn {
+      width: 38px; height: 38px; border: 0; border-radius: 10px;
+      background: transparent; color: var(--muted); font-size: 1.1rem;
+      display: grid; place-items: center; flex: none;
+      transition: background .2s, color .2s, transform .12s;
+    }
+    .icon-btn:hover { background: var(--paper); color: var(--ink); }
+    .icon-btn.danger:hover, .icon-btn[data-act="del"]:hover { color: var(--seal); }
+    .icon-btn:active { transform: scale(.9); }
+    .icon-btn:focus-visible { outline: 2px solid var(--jade); outline-offset: 1px; }
+
+    /* หน้าว่าง */
+    .empty-box { text-align: center; padding: 28px 16px; border-style: dashed; }
+    .empty-box i { font-size: 1.8rem; color: var(--jade); }
+    .empty-title { font-weight: 700; margin: 6px 0 2px; }
+    .empty-sub { color: var(--muted); margin: 0 0 14px; }
+
+    /* หน้าต่างแก้ไข / ยืนยัน */
+    .modal-content { border: 1px solid var(--line); border-radius: 16px; }
+    .modal-header { border-bottom: 0; }
+    .modal-footer { border-top: 0; }
+    .modal-title { font-weight: 700; font-size: 1.15rem; }
+    .notice {
+      background: #FBECEA; border: 1px solid #EFC3BE; border-radius: 12px;
+      padding: 10px 14px; margin-bottom: 14px; font-size: .9rem;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ================= [ส่วนกลาง] Header + โลโก้ ================= -->
+  <header class="topbar">
+    <div class="container app-wrap">
+      <a class="brand" href="index.html" aria-label="PJEENGame หน้าหลัก">
+        <span class="brand-mark hanzi" aria-hidden="true">学</span>
+        <span class="brand-name">PJEENGame</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- ================= [เฉพาะหน้า] เนื้อหาหน้าบทเรียน ================= -->
+  <main class="container app-wrap py-3">
+
+    <!-- หัวหน้า: มุมมองรวมทุกชุด -->
+    <div id="ovHead" class="d-flex justify-content-between align-items-start gap-2 mb-3">
+      <div>
+        <h1 class="page-title">บทเรียน</h1>
+        <p class="page-sub" id="ovSub"></p>
+      </div>
+      <a class="btn-ghost flex-shrink-0" href="add.html"><i class="bi bi-plus-lg"></i> เพิ่ม</a>
+    </div>
+
+    <!-- หัวหน้า: มุมมองภายในชุด -->
+    <div id="dtHead" class="d-none mb-3">
+      <a class="back" href="#"><i class="bi bi-chevron-left"></i> ชุดทั้งหมด</a>
+      <div class="d-flex justify-content-between align-items-start gap-2 mt-1">
+        <div class="min-w-0">
+          <h1 class="page-title" id="dtTitle"></h1>
+          <p class="page-sub" id="dtSub"></p>
+        </div>
+        <div class="d-flex gap-1 flex-shrink-0">
+          <button type="button" class="icon-btn" id="renameBtn" aria-label="เปลี่ยนชื่อชุด"><i class="bi bi-pencil"></i></button>
+          <button type="button" class="icon-btn danger" id="delSetBtn" aria-label="ลบทั้งชุด"><i class="bi bi-trash3"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ค้นหา + ตัวกรอง -->
+    <section id="controls" class="d-none mb-3">
+      <div class="search">
+        <i class="bi bi-search"></i>
+        <input type="search" class="form-control" id="q" aria-label="ค้นหา">
+      </div>
+      <div class="seg mt-2 d-none" id="typeSeg" role="radiogroup" aria-label="กรองตามประเภท">
+        <input class="btn-check" type="radio" name="ftype" id="fAll" value="all" checked>
+        <label for="fAll">ทั้งหมด</label>
+        <input class="btn-check" type="radio" name="ftype" id="fWord" value="word">
+        <label for="fWord">คำศัพท์</label>
+        <input class="btn-check" type="radio" name="ftype" id="fSentence" value="sentence">
+        <label for="fSentence">ประโยค</label>
+      </div>
+    </section>
+
+    <!-- รายการ (การ์ดชุด หรือ การ์ดคำ) -->
+    <section class="list" id="list" aria-live="polite"></section>
+
+    <!-- ยังไม่มีข้อมูลเลย -->
+    <section class="card-box empty-box d-none" id="emptyAll">
+      <i class="bi bi-journal-plus"></i>
+      <p class="empty-title">ยังไม่มีบทเรียน</p>
+      <p class="empty-sub">วางคำศัพท์ชุดแรกในหน้าเพิ่ม แล้วชุดจะมาอยู่ที่นี่</p>
+      <a class="btn btn-seal" href="add.html">เพิ่มชุดแรก</a>
+    </section>
+
+    <!-- ค้นหา/กรองแล้วไม่เจอ -->
+    <section class="card-box empty-box d-none" id="emptyNone">
+      <i class="bi bi-search"></i>
+      <p class="empty-title">ไม่พบรายการที่ตรงกัน</p>
+      <p class="empty-sub mb-0">ลองเปลี่ยนคำค้นหา หรือเลือกตัวกรองอื่น</p>
+    </section>
+
+  </main>
+
+  <!-- ================= [เฉพาะหน้า] หน้าต่างแก้ไขรายการ ================= -->
+  <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title" id="editTitle">แก้ไขรายการ</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ปิด"></button>
+        </div>
+        <div class="modal-body">
+          <form id="editForm" novalidate autocomplete="off">
+            <div class="field">
+              <span class="field-label" id="eTypeLabel">ประเภท</span>
+              <div class="seg" role="radiogroup" aria-labelledby="eTypeLabel">
+                <input class="btn-check" type="radio" name="etype" id="eTypeWord" value="word">
+                <label for="eTypeWord">คำศัพท์</label>
+                <input class="btn-check" type="radio" name="etype" id="eTypeSentence" value="sentence">
+                <label for="eTypeSentence">ประโยค</label>
+              </div>
+            </div>
+            <div class="field">
+              <label class="field-label" for="eHanzi">อักษรจีน</label>
+              <textarea class="form-control in-hanzi" id="eHanzi" rows="1" lang="zh-CN" spellcheck="false"></textarea>
+              <div class="invalid-feedback">ต้องมีอักษรจีนอย่างน้อย 1 ตัว</div>
+            </div>
+            <div class="field">
+              <label class="field-label" for="ePinyin">พินอิน</label>
+              <textarea class="form-control" id="ePinyin" rows="1" spellcheck="false"></textarea>
+              <div class="invalid-feedback">กรอกพินอินก่อน</div>
+            </div>
+            <div class="field">
+              <label class="field-label" for="eThai">คำอ่านไทย</label>
+              <textarea class="form-control" id="eThai" rows="1"></textarea>
+              <div class="invalid-feedback">กรอกคำอ่านไทยก่อน</div>
+            </div>
+            <div class="field mb-0">
+              <label class="field-label" for="eMeaning">ความหมายไทย</label>
+              <textarea class="form-control" id="eMeaning" rows="1"></textarea>
+              <div class="invalid-feedback">กรอกความหมายไทยก่อน</div>
+            </div>
+            <div class="notice d-none mt-3 mb-0" id="editErr" role="alert">บันทึกไม่สำเร็จ พื้นที่เก็บข้อมูลของเบราว์เซอร์อาจเต็มหรือถูกปิดไว้</div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-ghost" data-bs-dismiss="modal">ยกเลิก</button>
+          <button type="submit" class="btn btn-seal" form="editForm">บันทึกการแก้ไข</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= [เฉพาะหน้า] หน้าต่างเปลี่ยนชื่อชุด ================= -->
+  <div class="modal fade" id="renameModal" tabindex="-1" aria-labelledby="renameTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title" id="renameTitle">เปลี่ยนชื่อชุด</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ปิด"></button>
+        </div>
+        <div class="modal-body pt-0">
+          <form id="renameForm" novalidate autocomplete="off">
+            <label class="field-label" for="rnInput">ชื่อชุด</label>
+            <input class="form-control" id="rnInput" type="text" maxlength="40">
+            <div class="invalid-feedback">กรอกชื่อชุดก่อน</div>
+            <div class="notice d-none mt-3 mb-0" id="rnErr" role="alert">บันทึกไม่สำเร็จ พื้นที่เก็บข้อมูลของเบราว์เซอร์อาจเต็มหรือถูกปิดไว้</div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-ghost" data-bs-dismiss="modal">ยกเลิก</button>
+          <button type="submit" class="btn btn-seal" form="renameForm">บันทึก</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= [เฉพาะหน้า] หน้าต่างยืนยันลบ (ใช้ทั้งลบรายการ/ลบทั้งชุด) ================= -->
+  <div class="modal fade" id="cfModal" tabindex="-1" aria-labelledby="cfTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title" id="cfTitle"></h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ปิด"></button>
+        </div>
+        <div class="modal-body pt-0">
+          <p class="mb-0" id="cfMsg"></p>
+          <div class="notice d-none mt-3 mb-0" id="cfErr" role="alert">ลบไม่สำเร็จ ลองใหม่อีกครั้ง</div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-ghost" data-bs-dismiss="modal">ยกเลิก</button>
+          <button type="button" class="btn btn-seal" id="cfOk">ลบ</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= [ส่วนกลาง] Bottom Navbar ================= -->
+  <nav class="dock" aria-label="เมนูหลัก">
+    <span class="dock-pill" aria-hidden="true"></span>
+    <a class="dock-item" href="index.html"><i class="bi bi-house-door"></i><span class="lbl">หลัก</span></a>
+    <a class="dock-item" href="game.html"><i class="bi bi-controller"></i><span class="lbl">เล่นเกม</span></a>
+    <a class="dock-item" href="lessons.html"><i class="bi bi-journal-text"></i><span class="lbl">บทเรียน</span></a>
+    <a class="dock-item" href="stats.html"><i class="bi bi-bar-chart-line"></i><span class="lbl">สถิติ</span></a>
+    <a class="dock-item" href="add.html"><i class="bi bi-plus-circle"></i><span class="lbl">เพิ่ม</span></a>
+  </nav>
+
+  <!-- Bootstrap JS (ใช้กับหน้าต่างแก้ไข/ลบ) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- ============================================================
+       JavaScript
+       ส่วน [ส่วนกลาง] = ระบบ navbar ใช้เหมือนกันทุกหน้า
+       ส่วน [เฉพาะหน้า] = แสดงเป็นชุด เปิดดูชุด ค้นหา แก้ไข ลบ
+       ============================================================ -->
+  <script>
+    /* ---------- [ส่วนกลาง] ระบบ Bottom Navbar ---------- */
+    (function () {
+      const dock  = document.querySelector('.dock');
+      const pill  = dock.querySelector('.dock-pill');
+      const items = [...dock.querySelectorAll('.dock-item')];
+
+      const file = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+      let cur = items.findIndex(a => a.getAttribute('href').toLowerCase() === file);
+      if (cur < 0) cur = 0;
+
+      function setActive(i) {
+        items.forEach((a, j) => {
+          a.classList.toggle('active', j === i);
+          if (j === i) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+        });
+        pill.style.transform = `translateX(${i * 100}%)`;
+      }
+
+      pill.style.transition = 'none';
+      setActive(cur);
+      pill.offsetWidth;
+      pill.style.transition = '';
+
+      function ripple(el, e) {
+        const r = el.getBoundingClientRect();
+        const size = Math.max(r.width, r.height) * 1.6;
+        const s = document.createElement('span');
+        s.className = 'ripple';
+        s.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX - r.left - size / 2}px;top:${e.clientY - r.top - size / 2}px`;
+        el.appendChild(s);
+        s.addEventListener('animationend', () => s.remove());
+      }
+
+      const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      items.forEach((a, i) => {
+        a.addEventListener('pointerdown', e => ripple(a, e));
+        a.addEventListener('click', e => {
+          if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+          e.preventDefault();
+          if (i === cur) return;
+          setActive(i);
+          setTimeout(() => { location.href = a.href; }, reduce ? 0 : 260);
+        });
+      });
+
+      window.addEventListener('pageshow', e => { if (e.persisted) setActive(cur); });
+    })();
+
+
+    /* ---------- [เฉพาะหน้า] บทเรียนแบบชุด ---------- */
+    (function () {
+      const KEY_ITEMS = 'pjee_items';
+      const KEY_SETS  = 'pjee_sets';
+      const NONE = '_none';               // กลุ่มพิเศษ: รายการเก่าที่ไม่มีชุด
+
+      const read = k => {
+        try { const v = JSON.parse(localStorage.getItem(k)); return Array.isArray(v) ? v : []; }
+        catch (e) { return []; }
+      };
+      const write = (k, list) => {
+        try { localStorage.setItem(k, JSON.stringify(list)); return true; }
+        catch (e) { return false; }
+      };
+      const $ = id => document.getElementById(id);
+      const el = (tag, cls, text) => {
+        const e = document.createElement(tag);
+        if (cls) e.className = cls;
+        if (text != null) e.textContent = text;
+        return e;
+      };
+      // ตัดวรรณยุกต์พินอินออก เพื่อให้พิมพ์ "ni hao" แล้วหาเจอ "nǐ hǎo"
+      const norm = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+      const canSpeak = 'speechSynthesis' in window;
+
+      const state = { q: '', type: 'all' };
+      let lastKey = null;      // ใช้รู้ว่าเปลี่ยนมุมมองหรือยัง (เพื่อล้างคำค้นหา)
+      let curGroup = null;     // ชุดที่กำลังเปิดดูอยู่
+
+      /* ----- จัดรายการเข้าชุด ----- */
+      function buildGroups() {
+        const sets = read(KEY_SETS), items = read(KEY_ITEMS);
+        const map = new Map();
+        sets.forEach(s => {
+          if (s && s.id) map.set(s.id, { id: s.id, name: String(s.name || 'ชุดไม่มีชื่อ'), createdAt: s.createdAt, real: true, items: [] });
+        });
+        const orphan = { id: NONE, name: 'รายการเดิม (ยังไม่อยู่ในชุด)', createdAt: null, real: false, items: [] };
+        items.forEach(it => { (map.get(it.setId) || orphan).items.push(it); });
+        const groups = [...map.values()].filter(g => g.items.length);   // ชุดเก่าก่อน ชุดใหม่ต่อท้าย
+        if (orphan.items.length) groups.push(orphan);
+        return { groups, total: items.length };
+      }
+
+      const matchQ = (it, extra) => {
+        const q = norm(state.q.trim());
+        if (!q) return true;
+        return norm([it.hanzi, it.pinyin, it.thaiReading, it.meaning, extra].join(' ')).includes(q);
+      };
+
+      /* ----- สร้างการ์ด ----- */
+      function fmtDate(iso) {
+        const d = new Date(iso);
+        return isNaN(d) ? '' : d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
+      }
+
+      function setCard(g) {
+        const a = el('a', 'card-box setcard');
+        a.href = '#set=' + encodeURIComponent(g.id);
+
+        const top = el('div', 'set-top');
+        const chev = el('i', 'bi bi-chevron-right'); chev.setAttribute('aria-hidden', 'true');
+        top.append(el('span', 'set-name', g.name), chev);
+
+        const words = g.items.filter(i => i.type !== 'sentence').length;
+        const sents = g.items.length - words;
+        const meta = el('div', 'set-meta');
+        meta.append(el('span', 'set-count', g.items.length + ' รายการ'));
+        const parts = [];
+        if (words) parts.push('คำศัพท์ ' + words);
+        if (sents) parts.push('ประโยค ' + sents);
+        if (parts.length) meta.append(el('span', 'set-parts', parts.join('  ')));
+
+        const strip = el('div', 'strip');
+        strip.setAttribute('aria-hidden', 'true');
+        g.items.slice(0, 6).forEach(i => {
+          const h = String(i.hanzi || '');
+          const c = el('span', 'strip-chip', h.length > 6 ? h.slice(0, 6) + '…' : h);
+          c.lang = 'zh-CN';
+          strip.append(c);
+        });
+        if (g.items.length > 6) strip.append(el('span', 'strip-more', '+' + (g.items.length - 6)));
+
+        a.append(top, meta, strip);
+        const date = g.createdAt ? fmtDate(g.createdAt) : '';
+        if (date) a.append(el('p', 'set-date', 'เพิ่มเมื่อ ' + date));
+        return a;
+      }
+
+      function itemCard(it, setLabel) {
+        const isSentence = it.type === 'sentence';
+        const art = el('article', 'card-box item' + (isSentence ? ' is-sentence' : ''));
+        art.dataset.id = it.id;
+
+        const top = el('div', 'item-top');
+        const h = el('p', 'item-hanzi', it.hanzi);
+        h.lang = 'zh-CN';
+        top.append(h, el('span', 'item-badge', isSentence ? 'ประโยค' : 'คำศัพท์'));
+
+        const foot = el('div', 'item-foot');
+        const actions = el('div', 'item-actions');
+        const mk = (act, icon, label) => {
+          const b = el('button', 'icon-btn');
+          b.type = 'button'; b.dataset.act = act; b.setAttribute('aria-label', label);
+          b.innerHTML = `<i class="bi ${icon}"></i>`;
+          return b;
+        };
+        if (canSpeak) actions.append(mk('speak', 'bi-volume-up', 'ฟังเสียง'));
+        actions.append(mk('edit', 'bi-pencil', 'แก้ไข'), mk('del', 'bi-trash3', 'ลบ'));
+        foot.append(el('span', 'item-cat', setLabel ? 'ชุด: ' + setLabel : ''), actions);
+
+        art.append(top, el('p', 'item-pinyin', it.pinyin), el('p', 'item-thai', it.thaiReading), el('p', 'item-meaning', it.meaning), foot);
+        return art;
+      }
+
+      /* ----- แสดงผลตามมุมมองปัจจุบัน ----- */
+      function render() {
+        const { groups, total } = buildGroups();
+
+        // ดูว่าตอนนี้อยู่มุมมองไหน จาก #set=ID
+        const m = /^#set=(.+)$/.exec(location.hash);
+        let cur = null;
+        if (m) {
+          const id = decodeURIComponent(m[1]);
+          cur = groups.find(g => g.id === id) || null;
+          if (!cur) history.replaceState(null, '', location.pathname + location.search);   // ชุดนี้ไม่มีแล้ว กลับหน้ารวม
+        }
+        curGroup = cur;
+
+        // เปลี่ยนมุมมอง -> ล้างคำค้นหา/ตัวกรอง และเลื่อนขึ้นบนสุด
+        const key = cur ? cur.id : '';
+        if (key !== lastKey) {
+          state.q = ''; state.type = 'all';
+          $('q').value = '';
+          $('fAll').checked = true;
+          if (lastKey !== null) window.scrollTo(0, 0);
+          lastKey = key;
+        }
+
+        $('ovHead').classList.toggle('d-none', !!cur);
+        $('dtHead').classList.toggle('d-none', !cur);
+        $('typeSeg').classList.toggle('d-none', !cur);
+        $('controls').classList.toggle('d-none', total === 0);
+        $('q').placeholder = cur ? 'ค้นหาในชุดนี้' : 'ค้นหาทุกชุด อักษรจีน พินอิน คำอ่าน หรือความหมาย';
+
+        const q = state.q.trim();
+        let nodes = [];
+
+        if (cur) {
+          // ----- มุมมองในชุด -----
+          $('dtTitle').textContent = cur.name;
+          $('renameBtn').classList.toggle('d-none', !cur.real);
+          const list = cur.items.filter(i => (state.type === 'all' || i.type === state.type) && matchQ(i));
+          nodes = list.map(i => itemCard(i, null));
+          const filtered = q || state.type !== 'all';
+          $('dtSub').textContent = filtered ? `แสดง ${list.length} จาก ${cur.items.length} รายการ` : `${cur.items.length} รายการ`;
+        } else if (q) {
+          // ----- ค้นหาข้ามทุกชุด -----
+          groups.forEach(g => g.items.forEach(i => { if (matchQ(i, g.name)) nodes.push(itemCard(i, g.name)); }));
+          $('ovSub').textContent = `พบ ${nodes.length} รายการ`;
+        } else {
+          // ----- มุมมองรวมทุกชุด -----
+          nodes = groups.map(setCard);
+          $('ovSub').textContent = total === 0 ? '' : `${groups.length} ชุด รวม ${total} รายการ`;
+        }
+
+        $('list').replaceChildren(...nodes);
+        $('emptyAll').classList.toggle('d-none', total !== 0);
+        $('emptyNone').classList.toggle('d-none', total === 0 || nodes.length !== 0);
+      }
+
+      /* ----- ค้นหา / กรอง ----- */
+      $('q').addEventListener('input', e => { state.q = e.target.value; render(); });
+      document.querySelectorAll('input[name="ftype"]').forEach(r =>
+        r.addEventListener('change', () => { state.type = r.value; render(); }));
+
+      /* ----- หน้าต่างยืนยันลบ (ใช้ร่วมกัน) ----- */
+      const cfModal = new bootstrap.Modal($('cfModal'));
+      let onConfirm = null;
+      function askConfirm(title, before, name, after, isHanzi, fn) {
+        $('cfTitle').textContent = title;
+        const nameEl = el('span', isHanzi ? 'hanzi' : '', name);
+        nameEl.style.fontWeight = '700';
+        $('cfMsg').replaceChildren(document.createTextNode(before), nameEl, document.createTextNode(after));
+        $('cfErr').classList.add('d-none');
+        onConfirm = fn;
+        cfModal.show();
+      }
+      $('cfOk').addEventListener('click', () => {
+        if (!onConfirm) return;
+        if (onConfirm() === false) { $('cfErr').classList.remove('d-none'); return; }
+        cfModal.hide();
+        render();
+      });
+
+      /* ----- ปุ่มในการ์ดคำ ----- */
+      function speak(text) {
+        if (!canSpeak) return;
+        speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'zh-CN';
+        u.rate = 0.85;
+        speechSynthesis.speak(u);
+      }
+
+      $('list').addEventListener('click', e => {
+        const btn = e.target.closest('[data-act]');
+        if (!btn) return;
+        const id = btn.closest('[data-id]').dataset.id;
+        const it = read(KEY_ITEMS).find(x => x.id === id);
+        if (!it) return;
+        if (btn.dataset.act === 'speak') speak(it.hanzi);
+        if (btn.dataset.act === 'edit') openEdit(it);
+        if (btn.dataset.act === 'del') {
+          askConfirm('ลบรายการนี้?', '“', it.hanzi, '” จะถูกลบออกจากชุด และกู้คืนไม่ได้', true, () => deleteItem(id));
+        }
+      });
+
+      function deleteItem(id) {
+        const list = read(KEY_ITEMS);
+        const it = list.find(x => x.id === id);
+        const rest = list.filter(x => x.id !== id);
+        if (!write(KEY_ITEMS, rest)) return false;
+        // ถ้าลบรายการสุดท้ายของชุด ให้ลบชุดนั้นทิ้งด้วย
+        if (it && it.setId && !rest.some(x => x.setId === it.setId)) {
+          write(KEY_SETS, read(KEY_SETS).filter(s => s.id !== it.setId));
+        }
+        return true;
+      }
+
+      /* ----- แก้ไขรายการ ----- */
+      const editModal = new bootstrap.Modal($('editModal'));
+      const editForm = $('editForm');
+      const eHanzi = $('eHanzi'), ePinyin = $('ePinyin'), eThai = $('eThai'), eMean = $('eMeaning');
+      const order = [eHanzi, ePinyin, eThai, eMean];
+      let editingId = null;
+      const grow = x => { x.style.height = 'auto'; x.style.height = x.scrollHeight + 2 + 'px'; };
+
+      function openEdit(it) {
+        editingId = it.id;
+        editForm.querySelector(`input[name="etype"][value="${it.type === 'sentence' ? 'sentence' : 'word'}"]`).checked = true;
+        eHanzi.value = it.hanzi || '';
+        ePinyin.value = it.pinyin || '';
+        eThai.value = it.thaiReading || '';
+        eMean.value = it.meaning || '';
+        order.forEach(x => x.classList.remove('is-invalid'));
+        $('editErr').classList.add('d-none');
+        editModal.show();
+      }
+      // ปรับความสูงช่องพิมพ์หลังหน้าต่างเปิดเสร็จ (ตอนซ่อนอยู่วัดความสูงไม่ได้)
+      $('editModal').addEventListener('shown.bs.modal', () => order.forEach(grow));
+
+      order.forEach(x => {
+        x.addEventListener('input', () => { x.classList.remove('is-invalid'); grow(x); });
+        // Enter = ไปช่องถัดไป (ช่องสุดท้ายจะบันทึก) / ไม่ทำงานตอนกำลังเลือกคำจาก IME
+        x.addEventListener('keydown', e => {
+          if (e.key !== 'Enter' || e.shiftKey || e.isComposing || e.keyCode === 229) return;
+          e.preventDefault();
+          const i = order.indexOf(x);
+          if (i < order.length - 1) order[i + 1].focus(); else editForm.requestSubmit();
+        });
+      });
+
+      editForm.addEventListener('submit', e => {
+        e.preventDefault();
+        const data = {
+          type: editForm.querySelector('input[name="etype"]:checked').value,
+          hanzi: eHanzi.value.trim(),
+          pinyin: ePinyin.value.trim(),
+          thaiReading: eThai.value.trim(),
+          meaning: eMean.value.trim()
+        };
+        let ok = true, first = null;
+        const check = (x, cond) => {
+          x.classList.toggle('is-invalid', !cond);
+          if (!cond) { ok = false; if (!first) first = x; }
+        };
+        check(eHanzi, /[\u4e00-\u9fff]/.test(data.hanzi));
+        check(ePinyin, !!data.pinyin);
+        check(eThai, !!data.thaiReading);
+        check(eMean, !!data.meaning);
+        if (!ok) { first.focus(); return; }
+
+        const list = read(KEY_ITEMS);                 // อ่านใหม่ เผื่อมีการแก้จากแท็บอื่น
+        const idx = list.findIndex(x => x.id === editingId);
+        if (idx >= 0) {
+          list[idx] = { ...list[idx], ...data, updatedAt: new Date().toISOString() };
+          if (!write(KEY_ITEMS, list)) { $('editErr').classList.remove('d-none'); return; }
+        }
+        editModal.hide();
+        render();
+      });
+
+      /* ----- เปลี่ยนชื่อชุด ----- */
+      const renameModal = new bootstrap.Modal($('renameModal'));
+      const rnInput = $('rnInput');
+      let renamingId = null;
+
+      $('renameBtn').addEventListener('click', () => {
+        if (!curGroup || !curGroup.real) return;
+        renamingId = curGroup.id;
+        rnInput.value = curGroup.name;
+        rnInput.classList.remove('is-invalid');
+        $('rnErr').classList.add('d-none');
+        renameModal.show();
+      });
+      $('renameModal').addEventListener('shown.bs.modal', () => { rnInput.focus(); rnInput.select(); });
+      rnInput.addEventListener('input', () => rnInput.classList.remove('is-invalid'));
+      $('renameForm').addEventListener('submit', e => {
+        e.preventDefault();
+        const name = rnInput.value.trim();
+        if (!name) { rnInput.classList.add('is-invalid'); rnInput.focus(); return; }
+        const sets = read(KEY_SETS);
+        const idx = sets.findIndex(s => s.id === renamingId);
+        if (idx >= 0) {
+          sets[idx] = { ...sets[idx], name };
+          if (!write(KEY_SETS, sets)) { $('rnErr').classList.remove('d-none'); return; }
+        }
+        renameModal.hide();
+        render();
+      });
+
+      /* ----- ลบทั้งชุด ----- */
+      $('delSetBtn').addEventListener('click', () => {
+        if (!curGroup) return;
+        const g = curGroup;
+        askConfirm('ลบทั้งชุด?', 'ชุด “', g.name, `” และรายการทั้ง ${g.items.length} รายการในชุดจะถูกลบ กู้คืนไม่ได้`, false, () => {
+          const items = read(KEY_ITEMS), sets = read(KEY_SETS);
+          let keep;
+          if (g.id === NONE) { const ids = new Set(sets.map(s => s.id)); keep = items.filter(i => ids.has(i.setId)); }
+          else keep = items.filter(i => i.setId !== g.id);
+          if (!write(KEY_ITEMS, keep)) return false;
+          if (g.id !== NONE) write(KEY_SETS, sets.filter(s => s.id !== g.id));
+          return true;
+        });
+      });
+
+      /* ----- อัปเดตเมื่อเปลี่ยนมุมมอง / ข้อมูลเปลี่ยนจากที่อื่น ----- */
+      window.addEventListener('hashchange', render);
+      window.addEventListener('storage', e => { if (e.key === KEY_ITEMS || e.key === KEY_SETS) render(); });
+      window.addEventListener('pageshow', e => { if (e.persisted) render(); });
+
+      render();
+    })();
+  </script>
+</body>
+</html>

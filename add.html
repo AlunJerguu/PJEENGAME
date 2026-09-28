@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>PJEENGame - เพิ่ม</title>
+
+  <!-- Bootstrap 5 + Bootstrap Icons + ฟอนต์ -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;700&family=Noto+Serif+SC:wght@700&display=swap" rel="stylesheet">
+
+  <!-- ============================================================
+       CSS ของหน้านี้
+       ส่วน [ส่วนกลาง] ใช้เหมือนกันทุกหน้า (เหมือน index.html)
+       ส่วน [เฉพาะหน้า] เปลี่ยนตามแต่ละหน้า
+       ============================================================ -->
+  <style>
+    /* ---------- [ส่วนกลาง] ตัวแปรสี / พื้นฐาน ---------- */
+    :root {
+      --paper: #EEF2EF;
+      --card:  #FFFFFF;
+      --ink:   #1D2B2A;
+      --muted: #64736F;
+      --line:  #D6DFDA;
+      --jade:  #2F7D6D;
+      --seal:  #C8372D;
+      --dock-h: 66px;
+    }
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: 'Noto Sans Thai', system-ui, sans-serif;
+      padding-bottom: calc(var(--dock-h) + 40px + env(safe-area-inset-bottom));
+      animation: pageIn .35s ease-out both;
+    }
+    @keyframes pageIn { from { opacity: 0; } to { opacity: 1; } }
+    .app-wrap { max-width: 720px; }
+    .hanzi { font-family: 'Noto Serif SC', serif; }
+
+    /* ---------- [ส่วนกลาง] Header + โลโก้ ---------- */
+    .topbar {
+      position: sticky; top: 0; z-index: 1020;
+      background: var(--paper);
+      border-bottom: 1px solid var(--line);
+      padding-top: env(safe-area-inset-top);
+    }
+    .brand { display: flex; align-items: center; gap: 10px; padding: 12px 0; text-decoration: none; color: var(--ink); }
+    .brand-mark {
+      width: 34px; height: 34px; border-radius: 6px;
+      background: var(--seal); color: #fff;
+      display: grid; place-items: center;
+      font-size: 20px; line-height: 1;
+      transform: rotate(-4deg);
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,.35);
+    }
+    .brand-name { font-size: 1.2rem; font-weight: 700; letter-spacing: .2px; }
+
+    /* ---------- [ส่วนกลาง] การ์ด / ปุ่ม ---------- */
+    .card-box {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+    }
+    .btn-seal {
+      background: var(--seal); color: #fff; border: 0;
+      border-radius: 12px; padding: .7rem 1.2rem; font-weight: 700;
+      transition: background .2s, transform .12s;
+    }
+    .btn-seal:hover { background: #B02F26; color: #fff; }
+    .btn-seal:active { transform: scale(.97); }
+    a:focus-visible, .btn:focus-visible { outline: 2px solid var(--jade); outline-offset: 2px; }
+
+    /* ---------- [ส่วนกลาง] Bottom Navbar ---------- */
+    .dock {
+      position: fixed; z-index: 1030;
+      left: 50%; transform: translateX(-50%);
+      bottom: calc(12px + env(safe-area-inset-bottom));
+      width: min(440px, calc(100% - 24px));
+      height: var(--dock-h);
+      padding: 6px;
+      display: flex;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: 0 8px 24px rgba(29, 43, 42, .12);
+    }
+    .dock-pill {
+      position: absolute; top: 6px; bottom: 6px; left: 6px;
+      width: calc((100% - 12px) / 5);
+      background: var(--ink);
+      border-radius: 18px;
+      transition: transform .38s cubic-bezier(.34, 1.4, .5, 1);
+    }
+    .dock-item {
+      position: relative; z-index: 1;
+      flex: 1 1 0;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--muted); text-decoration: none;
+      border-radius: 18px; overflow: hidden;
+      -webkit-tap-highlight-color: transparent;
+      transition: color .25s, transform .12s;
+    }
+    .dock-item:active { transform: scale(.92); }
+    .dock-item:focus-visible { outline: 2px solid var(--jade); outline-offset: -2px; }
+    .dock-item i {
+      font-size: 22px; line-height: 1;
+      transition: transform .3s cubic-bezier(.34, 1.56, .64, 1);
+    }
+    .dock-item .lbl {
+      position: absolute; bottom: 6px;
+      font-size: 11px; line-height: 1.2; font-weight: 500; white-space: nowrap;
+      opacity: 0; transform: translateY(5px);
+      transition: opacity .25s, transform .25s;
+    }
+    .dock-item.active { color: #fff; }
+    .dock-item.active i { transform: translateY(-8px); }
+    .dock-item.active .lbl { opacity: 1; transform: none; }
+    .ripple {
+      position: absolute; border-radius: 50%; pointer-events: none;
+      background: rgba(47, 125, 109, .28);
+      transform: scale(0);
+      animation: ripple .55s ease-out forwards;
+    }
+    .dock-item.active .ripple { background: rgba(255, 255, 255, .3); }
+    @keyframes ripple { to { transform: scale(1); opacity: 0; } }
+
+    /* ---------- [เฉพาะหน้า] หน้าเพิ่ม (วางทีเดียวหลายรายการ) ---------- */
+    .page-title { font-size: 1.4rem; font-weight: 700; margin: 0; }
+    .page-sub   { color: var(--muted); margin: 0; }
+
+    .field { margin-bottom: 14px; }
+    .field-label { font-weight: 500; margin-bottom: 4px; display: block; }
+    .field-opt   { color: var(--muted); font-weight: 400; font-size: .85rem; }
+    .form-control {
+      border: 1px solid var(--line); border-radius: 12px;
+      padding: .6rem .8rem; background: #fff; color: var(--ink);
+    }
+    .form-control:focus { border-color: var(--jade); box-shadow: 0 0 0 3px rgba(47, 125, 109, .2); background: #fff; color: var(--ink); }
+    .form-control::placeholder { color: #A9B7B2; }
+
+    /* คำอธิบายรูปแบบข้อมูล */
+    .fmt { background: var(--paper); border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; }
+    .fmt p { margin: 0; font-size: .9rem; }
+    .fmt-note { color: var(--muted); }
+    .fmt code {
+      display: block; margin: 8px 0; padding: 6px 10px;
+      background: #fff; border: 1px solid var(--line); border-radius: 8px;
+      color: var(--ink); font-size: .85rem; white-space: pre-wrap; word-break: break-word;
+    }
+
+    /* ช่องวางข้อมูล */
+    .bulk {
+      min-height: 240px; resize: vertical;
+      line-height: 1.7; white-space: pre; overflow: auto;
+    }
+    .bulk-bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: 8px 0 14px; min-height: 30px; }
+    .bulk-status { color: var(--muted); font-size: .9rem; margin: 0; }
+    .counter {
+      flex: none; font-size: .85rem; font-weight: 700;
+      border: 1px solid var(--line); border-radius: 999px; padding: 2px 12px; color: var(--jade); background: #fff;
+    }
+    .counter.over { color: var(--seal); border-color: var(--seal); }
+    .link-btn { background: none; border: 0; padding: 4px 6px; color: var(--muted); text-decoration: underline; font-size: .9rem; border-radius: 6px; }
+    .link-btn:hover { color: var(--ink); }
+    .link-btn:focus-visible { outline: 2px solid var(--jade); outline-offset: 1px; }
+
+    /* กล่องแจ้งเตือน */
+    .notice {
+      border-radius: 12px; padding: 10px 14px; margin-bottom: 14px; font-size: .9rem;
+      background: #FBECEA; border: 1px solid #EFC3BE;
+    }
+    .notice.info { background: #E8F2EF; border-color: #BFDCD5; }
+    .notice ul { margin: 0; padding-left: 1.1rem; }
+    .notice .form-check { margin: 8px 0 0; }
+    .form-check-input:checked { background-color: var(--jade); border-color: var(--jade); }
+    .form-check-input:focus { border-color: var(--jade); box-shadow: 0 0 0 3px rgba(47, 125, 109, .2); }
+
+    .btn-seal.done { background: var(--jade); }
+    .btn-seal:disabled { opacity: .45; }
+    .btn-seal.done:disabled { opacity: 1; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ================= [ส่วนกลาง] Header + โลโก้ ================= -->
+  <header class="topbar">
+    <div class="container app-wrap">
+      <a class="brand" href="index.html" aria-label="PJEENGame หน้าหลัก">
+        <span class="brand-mark hanzi" aria-hidden="true">学</span>
+        <span class="brand-name">PJEENGame</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- ================= [เฉพาะหน้า] เนื้อหาหน้าเพิ่ม ================= -->
+  <main class="container app-wrap py-3">
+
+    <div class="mb-3">
+      <h1 class="page-title">เพิ่มคำหรือประโยค</h1>
+      <p class="page-sub">วางได้ครั้งละไม่เกิน 15 รายการ บันทึกเป็น 1 ชุดในหน้าบทเรียน</p>
+    </div>
+
+    <form id="addForm" class="card-box" novalidate autocomplete="off">
+
+      <div class="field">
+        <label class="field-label" for="setName">ชื่อชุด <span class="field-opt">(ไม่บังคับ)</span></label>
+        <input class="form-control" id="setName" type="text" maxlength="40">
+      </div>
+
+      <div class="fmt">
+        <p>1 บรรทัด = 1 รายการ คั่น 4 ช่องด้วย <b>|</b> หรือ <b>Tab</b></p>
+        <code>อักษรจีน | พินอิน | คำอ่านไทย | ความหมายไทย</code>
+        <p class="fmt-note">คัดลอกจากตารางใน Excel หรือ Google Sheets มาวางได้เลย ระบบแยกให้เองว่าเป็นคำหรือประโยค</p>
+      </div>
+
+      <label class="field-label" for="bulk">ข้อมูลที่จะเพิ่ม</label>
+      <textarea class="form-control bulk" id="bulk" wrap="off" spellcheck="false" autocapitalize="off" autocorrect="off"></textarea>
+
+      <div class="bulk-bar">
+        <p class="bulk-status" id="status" aria-live="polite">วางข้อมูลในช่องด้านบนได้เลย</p>
+        <div class="d-flex align-items-center gap-1">
+          <button type="button" class="link-btn d-none" id="clearBtn">ล้าง</button>
+          <span class="counter" id="counter">0 / 15</span>
+        </div>
+      </div>
+
+      <div class="notice d-none" id="errBox" role="alert"></div>
+
+      <div class="notice info d-none" id="dupBox">
+        <div id="dupText"></div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="skipDup" checked>
+          <label class="form-check-label" for="skipDup">ข้ามรายการที่ซ้ำ</label>
+        </div>
+      </div>
+
+      <div class="notice d-none" id="saveErr" role="alert">บันทึกไม่สำเร็จ พื้นที่เก็บข้อมูลของเบราว์เซอร์อาจเต็มหรือถูกปิดไว้</div>
+
+      <button type="submit" class="btn btn-seal w-100" id="saveBtn" disabled>บันทึก</button>
+    </form>
+
+  </main>
+
+  <!-- ================= [ส่วนกลาง] Bottom Navbar ================= -->
+  <nav class="dock" aria-label="เมนูหลัก">
+    <span class="dock-pill" aria-hidden="true"></span>
+    <a class="dock-item" href="index.html"><i class="bi bi-house-door"></i><span class="lbl">หลัก</span></a>
+    <a class="dock-item" href="game.html"><i class="bi bi-controller"></i><span class="lbl">เล่นเกม</span></a>
+    <a class="dock-item" href="lessons.html"><i class="bi bi-journal-text"></i><span class="lbl">บทเรียน</span></a>
+    <a class="dock-item" href="stats.html"><i class="bi bi-bar-chart-line"></i><span class="lbl">สถิติ</span></a>
+    <a class="dock-item" href="add.html"><i class="bi bi-plus-circle"></i><span class="lbl">เพิ่ม</span></a>
+  </nav>
+
+  <!-- ============================================================
+       JavaScript
+       ส่วน [ส่วนกลาง] = ระบบ navbar ใช้เหมือนกันทุกหน้า
+       ส่วน [เฉพาะหน้า] = อ่านข้อมูลที่วาง ตรวจ และบันทึกเป็นชุด
+       ============================================================ -->
+  <script>
+    /* ---------- [ส่วนกลาง] ระบบ Bottom Navbar ---------- */
+    (function () {
+      const dock  = document.querySelector('.dock');
+      const pill  = dock.querySelector('.dock-pill');
+      const items = [...dock.querySelectorAll('.dock-item')];
+
+      const file = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+      let cur = items.findIndex(a => a.getAttribute('href').toLowerCase() === file);
+      if (cur < 0) cur = 0;
+
+      function setActive(i) {
+        items.forEach((a, j) => {
+          a.classList.toggle('active', j === i);
+          if (j === i) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+        });
+        pill.style.transform = `translateX(${i * 100}%)`;
+      }
+
+      pill.style.transition = 'none';
+      setActive(cur);
+      pill.offsetWidth;
+      pill.style.transition = '';
+
+      function ripple(el, e) {
+        const r = el.getBoundingClientRect();
+        const size = Math.max(r.width, r.height) * 1.6;
+        const s = document.createElement('span');
+        s.className = 'ripple';
+        s.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX - r.left - size / 2}px;top:${e.clientY - r.top - size / 2}px`;
+        el.appendChild(s);
+        s.addEventListener('animationend', () => s.remove());
+      }
+
+      const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      items.forEach((a, i) => {
+        a.addEventListener('pointerdown', e => ripple(a, e));
+        a.addEventListener('click', e => {
+          if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+          e.preventDefault();
+          if (i === cur) return;
+          setActive(i);
+          setTimeout(() => { location.href = a.href; }, reduce ? 0 : 260);
+        });
+      });
+
+      window.addEventListener('pageshow', e => { if (e.persisted) setActive(cur); });
+    })();
+
+
+    /* ---------- [เฉพาะหน้า] วางหลายรายการ แล้วบันทึกเป็น 1 ชุด ---------- */
+    (function () {
+      const KEY_ITEMS = 'pjee_items';   // รายการคำ/ประโยคทั้งหมด
+      const KEY_SETS  = 'pjee_sets';    // รายชื่อชุด (แต่ละชุดมีได้ไม่เกิน 15 รายการ)
+      const MAX = 15;
+
+      const readArr = k => {
+        try { const v = JSON.parse(localStorage.getItem(k)); return Array.isArray(v) ? v : []; }
+        catch (e) { return []; }
+      };
+      const $ = id => document.getElementById(id);
+      const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      const form    = $('addForm');
+      const bulk    = $('bulk');
+      const setName = $('setName');
+      const saveBtn = $('saveBtn');
+      const skipDup = $('skipDup');
+
+      const EXAMPLE = '你好 | nǐ hǎo | หนี่ ห่าว | สวัสดี\n你吃饭了吗？ | nǐ chī fàn le ma? | หนี่ ชือ ฟ่าน เลอ มา | คุณกินข้าวหรือยัง';
+      bulk.placeholder = EXAMPLE;
+      setName.placeholder = 'ชุดที่ ' + (readArr(KEY_SETS).length + 1);
+
+      const cjk = /[\u4e00-\u9fff]/;
+      // เดาว่าเป็นประโยคถ้ามีเครื่องหมายวรรคตอน หรือยาวตั้งแต่ 5 ตัวอักษรจีนขึ้นไป
+      const guessType = h => (/[。？！，、；：?!,;]/.test(h) || (h.match(/[\u4e00-\u9fff]/g) || []).length >= 5) ? 'sentence' : 'word';
+
+      /* ----- อ่านข้อความที่วางมา ทีละบรรทัด ----- */
+      function parse(text) {
+        const rows = [], errors = [];
+        let total = 0, headerSkipped = false;
+
+        text.split(/\r?\n/).forEach((raw, idx) => {
+          const line = idx + 1;
+          if (!raw.trim()) return;                              // บรรทัดว่าง
+          if (/^[\s|:\-]+$/.test(raw)) return;                  // เส้นคั่นของตาราง |---|---|
+          if (total === 0 && !headerSkipped && !cjk.test(raw)) { headerSkipped = true; return; }  // หัวตาราง
+
+          total++;
+          let cells;
+          if (raw.includes('\t')) {
+            cells = raw.split('\t');
+          } else if (raw.includes('|')) {
+            cells = raw.split('|');
+            if (cells.length && !cells[0].trim()) cells.shift();                    // | ที่ขึ้นต้นบรรทัด
+            if (cells.length && !cells[cells.length - 1].trim()) cells.pop();       // | ที่ท้ายบรรทัด
+          } else {
+            errors.push({ line, msg: 'ไม่พบตัวคั่น ( | หรือ Tab )' });
+            return;
+          }
+          cells = cells.map(c => c.trim());
+          if (cells.length === 5 && /^\d+[.)]?$/.test(cells[0])) cells.shift();      // คอลัมน์ลำดับเลขข้างหน้า
+
+          if (cells.length !== 4) { errors.push({ line, msg: `มี ${cells.length} ช่อง (ต้องมี 4 ช่อง)` }); return; }
+          const [hanzi, pinyin, thaiReading, meaning] = cells;
+          if (!cjk.test(hanzi)) { errors.push({ line, msg: 'ช่องแรกไม่มีอักษรจีน' }); return; }
+          if (!pinyin || !thaiReading || !meaning) { errors.push({ line, msg: 'มีช่องที่ว่างอยู่' }); return; }
+
+          rows.push({ line, hanzi, pinyin, thaiReading, meaning, type: guessType(hanzi) });
+        });
+        return { rows, errors, total };
+      }
+
+      /* ----- ตรวจผลทั้งหมด (ใช้ทั้งตอนแสดงผลและตอนกดบันทึก) ----- */
+      function analyze() {
+        const p = parse(bulk.value);
+        const existing = new Set(readArr(KEY_ITEMS).map(i => String(i.hanzi || '').trim()));
+        const seen = new Set();
+        const dups = [], fresh = [];
+        p.rows.forEach(r => {
+          if (existing.has(r.hanzi) || seen.has(r.hanzi)) dups.push(r); else fresh.push(r);
+          seen.add(r.hanzi);
+        });
+        const toSave = skipDup.checked ? fresh : p.rows;
+        const over = p.total > MAX;
+        const ok = p.total >= 1 && !over && p.errors.length === 0 && toSave.length > 0;
+        return { ...p, dups, toSave, over, ok };
+      }
+
+      /* ----- แสดงสถานะบนหน้าจอ ----- */
+      function refresh() {
+        const a = analyze();
+
+        $('counter').textContent = `${a.total} / ${MAX}`;
+        $('counter').classList.toggle('over', a.over);
+        $('clearBtn').classList.toggle('d-none', !bulk.value.trim());
+        $('saveErr').classList.add('d-none');
+
+        $('status').textContent = a.total === 0
+          ? 'วางข้อมูลในช่องด้านบนได้เลย'
+          : `อ่านได้ ${a.rows.length} รายการ` + (a.errors.length ? ` มีปัญหา ${a.errors.length} บรรทัด` : '');
+
+        // ข้อผิดพลาด
+        const msgs = [];
+        if (a.over) msgs.push(`เกิน ${MAX} รายการ (พบ ${a.total}) ต้องลดออก ${a.total - MAX} รายการ`);
+        a.errors.slice(0, 5).forEach(er => msgs.push(`บรรทัด ${er.line}: ${er.msg}`));
+        if (a.errors.length > 5) msgs.push(`และอีก ${a.errors.length - 5} บรรทัด`);
+        const errBox = $('errBox');
+        errBox.replaceChildren();
+        if (msgs.length) {
+          const ul = document.createElement('ul');
+          msgs.forEach(m => { const li = document.createElement('li'); li.textContent = m; ul.appendChild(li); });
+          errBox.appendChild(ul);
+        }
+        errBox.classList.toggle('d-none', msgs.length === 0);
+
+        // รายการซ้ำ
+        const dupBox = $('dupBox');
+        if (a.dups.length) {
+          const names = a.dups.slice(0, 5).map(r => r.hanzi).join(', ') + (a.dups.length > 5 ? ' ...' : '');
+          $('dupText').textContent = `ซ้ำกับที่มีอยู่หรือซ้ำกันเอง ${a.dups.length} รายการ: ${names}`;
+        }
+        dupBox.classList.toggle('d-none', a.dups.length === 0);
+
+        // ปุ่มบันทึก
+        saveBtn.disabled = !a.ok;
+        if (a.total > 0 && a.errors.length === 0 && !a.over && a.toSave.length === 0) saveBtn.textContent = 'ไม่มีรายการใหม่ให้บันทึก';
+        else saveBtn.textContent = a.ok ? `บันทึก ${a.toSave.length} รายการ` : 'บันทึก';
+      }
+
+      bulk.addEventListener('input', refresh);
+      skipDup.addEventListener('change', refresh);
+      $('clearBtn').addEventListener('click', () => { bulk.value = ''; refresh(); bulk.focus(); });
+
+      /* ----- บันทึก ----- */
+      form.addEventListener('submit', e => {
+        e.preventDefault();
+        const a = analyze();                       // ตรวจใหม่อีกครั้ง เผื่อข้อมูลเปลี่ยนจากแท็บอื่น
+        if (!a.ok) { refresh(); return; }
+
+        const items = readArr(KEY_ITEMS);
+        const sets  = readArr(KEY_SETS);
+        const now   = new Date().toISOString();
+        const base  = Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+
+        const set = { id: 's' + base, name: setName.value.trim() || ('ชุดที่ ' + (sets.length + 1)), createdAt: now };
+        const newItems = a.toSave.map((r, i) => ({
+          id: base + i.toString(36),
+          type: r.type,
+          hanzi: r.hanzi,
+          pinyin: r.pinyin,
+          thaiReading: r.thaiReading,
+          meaning: r.meaning,
+          setId: set.id,
+          createdAt: now
+        }));
+
+        const prevItems = localStorage.getItem(KEY_ITEMS);
+        try {
+          localStorage.setItem(KEY_ITEMS, JSON.stringify(items.concat(newItems)));
+          localStorage.setItem(KEY_SETS, JSON.stringify(sets.concat(set)));
+        } catch (err) {
+          // บันทึกไม่ครบ ให้ย้อนกลับ ไม่ให้เหลือรายการที่ไม่มีชุด
+          try { if (prevItems === null) localStorage.removeItem(KEY_ITEMS); else localStorage.setItem(KEY_ITEMS, prevItems); } catch (e2) {}
+          $('saveErr').classList.remove('d-none');
+          return;
+        }
+
+        // สำเร็จ -> ไปหน้าบทเรียน
+        saveBtn.disabled = true;
+        saveBtn.classList.add('done');
+        saveBtn.innerHTML = `<i class="bi bi-check-lg"></i> บันทึกแล้ว ${newItems.length} รายการ`;
+        setTimeout(() => { location.href = 'lessons.html'; }, reduce ? 0 : 700);
+      });
+
+      refresh();
+    })();
+  </script>
+</body>
+</html>
