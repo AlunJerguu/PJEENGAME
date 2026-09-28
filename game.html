@@ -155,6 +155,23 @@
     .seal.lg { width: 76px; height: 76px; font-size: 44px; }
 
     /* หน้าเลือกเกม */
+    .gamecard {
+      display: flex; align-items: center; gap: 14px; width: 100%; text-align: left;
+      color: var(--ink); transition: border-color .2s, transform .12s;
+    }
+    .gamecard:hover { border-color: var(--jade); }
+    .gamecard:active { transform: scale(.99); }
+    .gamecard:focus-visible { outline: 2px solid var(--jade); outline-offset: 2px; }
+    .gamecard .chev { flex: none; margin-left: auto; color: var(--muted); }
+    .game-list { display: flex; flex-direction: column; gap: 10px; }
+
+    /* หน้าตั้งค่าของแต่ละเกม */
+    .back {
+      display: inline-flex; align-items: center; gap: 4px; margin-bottom: 10px;
+      color: var(--muted); background: none; border: 0; padding: 2px 0;
+    }
+    .back:hover { color: var(--ink); }
+    .back:focus-visible { outline: 2px solid var(--jade); outline-offset: 2px; border-radius: 6px; }
     .game-head { display: flex; gap: 14px; align-items: center; }
     .game-title { font-size: 1.2rem; font-weight: 700; margin: 0; }
     .game-desc  { color: var(--muted); font-size: .9rem; margin: 0; }
@@ -174,26 +191,42 @@
     }
     .seg .btn-check:checked + label { background: #fff; color: var(--ink); font-weight: 700; box-shadow: 0 1px 3px rgba(29, 43, 42, .15); }
     .seg .btn-check:focus-visible + label { outline: 2px solid var(--jade); outline-offset: 1px; }
-    .info-line { color: var(--muted); font-size: .9rem; margin: 0 0 14px; }
+    .info-line { color: var(--muted); font-size: .9rem; margin: 0 0 14px; white-space: pre-line; }
+    .btn-seal:disabled { opacity: .45; }
 
     .empty-box { text-align: center; padding: 28px 16px; border-style: dashed; }
     .empty-box i { font-size: 1.8rem; color: var(--jade); }
     .empty-title { font-weight: 700; margin: 6px 0 2px; }
     .empty-sub { color: var(--muted); margin: 0 0 14px; }
 
-    /* ระหว่างเล่น */
-    .hud { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    /* แถบด้านบนระหว่างเล่น */
+    .hud { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
     .hud-step { font-weight: 700; }
     .hud-score {
       font-size: .85rem; font-weight: 700; color: var(--jade); background: #fff;
       border: 1px solid var(--line); border-radius: 999px; padding: 2px 12px;
     }
+    .hud-timer {
+      position: relative; display: inline-flex; align-items: center; gap: 6px;
+      font-weight: 700; font-size: 1.1rem; font-variant-numeric: tabular-nums;
+    }
+    .hud-timer.low { color: var(--seal); animation: pulse 1s ease-in-out infinite; }
+    .bonus {
+      position: absolute; right: -6px; top: -16px;
+      color: var(--jade); font-size: .95rem; font-weight: 700;
+      opacity: 0; pointer-events: none;
+    }
+    .bonus.show { animation: bonusUp .9s ease-out; }
+    @keyframes bonusUp { 0% { opacity: 0; transform: translateY(6px); } 20% { opacity: 1; } 100% { opacity: 0; transform: translateY(-10px); } }
+    @keyframes pulse { 50% { transform: scale(1.08); } }
+
     .pbar { height: 6px; background: #DCE5E0; border-radius: 999px; overflow: hidden; margin-bottom: 14px; }
     .pfill { height: 100%; width: 0; background: var(--jade); border-radius: 999px; transition: width .4s cubic-bezier(.22, 1, .36, 1); }
 
     .enter { animation: qIn .3s ease-out both; }
     @keyframes qIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
+    /* เกมตอบคำถาม */
     .q-card { text-align: center; padding: 22px 16px; }
     .q-label { color: var(--muted); font-size: .85rem; margin: 0 0 8px; }
     .q-hanzi { font-family: 'Noto Serif SC', serif; font-size: 2.8rem; font-weight: 700; line-height: 1.3; margin: 0; word-break: break-word; }
@@ -239,9 +272,32 @@
     @keyframes pop   { 50% { transform: scale(1.02); } }
     @keyframes shake { 20% { transform: translateX(-6px); } 50% { transform: translateX(6px); } 80% { transform: translateX(-3px); } }
 
-    #nextBtn { margin-top: 14px; scroll-margin-bottom: calc(var(--dock-h) + 30px); }
+    /* เกมจับคู่คำศัพท์ */
+    .board { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .bcol { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+    .mcard {
+      width: 100%; min-height: 60px; text-align: left;
+      display: flex; flex-direction: column; justify-content: center;
+      background: #fff; color: var(--ink);
+      border: 1.5px solid var(--line); border-radius: 14px; padding: .6rem .8rem;
+      transition: border-color .2s, background .2s, opacity .3s, transform .12s;
+    }
+    .mcard:hover:not(:disabled) { border-color: var(--jade); }
+    .mcard:active:not(:disabled) { transform: scale(.98); }
+    .mcard:focus-visible { outline: 2px solid var(--jade); outline-offset: 2px; }
+    .mcard:disabled { color: var(--ink); cursor: default; }
+    .mcard.sel { border-color: var(--jade); background: #E8F2EF; }
+    .mcard.bad { border-color: var(--seal); background: #FBECEA; animation: shake .35s; }
+    .mcard.matched { border-color: var(--jade); background: #E8F2EF; opacity: .45; animation: pop .3s ease-out; }
+    .mc-hanzi { font-family: 'Noto Serif SC', serif; font-size: 1.35rem; font-weight: 700; line-height: 1.3; word-break: break-word; }
+    .mcard.is-sentence .mc-hanzi { font-size: 1.05rem; }
+    .mc-pinyin { color: var(--jade); font-size: .85rem; word-break: break-word; }
+    .mc-meaning { word-break: break-word; }
 
-    /* สรุปผล */
+    /* ป๊อบอัพสรุปผล */
+    .modal-content { border: 1px solid var(--line); border-radius: 16px; }
+    .modal-footer { border-top: 0; }
+    .modal-title { font-weight: 700; font-size: 1.15rem; }
     .score { font-size: 2.6rem; font-weight: 700; line-height: 1.2; margin: 12px 0 0; }
     .score small { font-size: 1.1rem; font-weight: 500; color: var(--muted); }
     .res-msg  { font-weight: 500; margin: 4px 0 0; }
@@ -249,6 +305,7 @@
     .miss-title { font-weight: 700; margin: 0 0 8px; }
     .list { display: flex; flex-direction: column; gap: 10px; }
     .miss { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 14px; }
+    .min-w-0 { min-width: 0; }
     .miss-hanzi { font-family: 'Noto Serif SC', serif; font-size: 1.4rem; font-weight: 700; line-height: 1.3; margin: 0; word-break: break-word; }
     .miss-pinyin { color: var(--jade); font-size: .95rem; margin: 0; word-break: break-word; }
     .miss-meaning { font-weight: 500; margin: 2px 0 0; word-break: break-word; }
@@ -267,7 +324,7 @@
     }
 
     @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
     }
   </style>
 </head>
@@ -287,29 +344,33 @@
   <!-- ================= [เฉพาะหน้า] เนื้อหาหน้าเล่นเกม ================= -->
   <main class="container app-wrap py-3">
 
-    <!-- ===== หน้าเลือกเกม / ตั้งค่า ===== -->
-    <section id="vStart">
+    <!-- ===== 1) เลือกเกม ===== -->
+    <section id="vMenu">
       <div class="mb-3">
         <h1 class="page-title">เล่นเกม</h1>
-        <p class="page-sub">ฝึกจากคำศัพท์ในบทเรียนของคุณ</p>
+        <p class="page-sub">เลือกเกมที่อยากเล่น</p>
       </div>
+      <div class="game-list" id="gameList"></div>
+    </section>
+
+    <!-- ===== 2) ตั้งค่าเกมที่เลือก แล้วกดเริ่มเล่น ===== -->
+    <section id="vSetup" class="d-none">
+      <button type="button" class="back" id="backBtn"><i class="bi bi-chevron-left"></i> เลือกเกม</button>
 
       <!-- ยังมีข้อมูลไม่พอ -->
       <section class="card-box empty-box d-none" id="needMore">
         <i class="bi bi-journal-plus"></i>
         <p class="empty-title">ยังมีคำในบทเรียนไม่พอ</p>
-        <p class="empty-sub">ต้องมีอย่างน้อย 4 รายการที่ความหมายไม่ซ้ำกัน เพื่อทำตัวเลือก 4 ข้อ ตอนนี้มี <span id="needCount">0</span> รายการ</p>
+        <p class="empty-sub" id="needText"></p>
         <a class="btn btn-seal" href="add.html">เพิ่มคำศัพท์</a>
       </section>
 
-      <!-- เกม: ตอบคำถาม
-           ถ้าจะเพิ่มเกมใหม่ในอนาคต ให้ทำการ์ดแบบนี้เพิ่ม แล้วเขียนตัวเกมแยกในส่วน JS -->
       <section class="card-box" id="gameBody">
         <div class="game-head">
-          <div class="seal hanzi" aria-hidden="true">问</div>
+          <div class="seal hanzi" id="setGlyph" aria-hidden="true"></div>
           <div>
-            <p class="game-title">ตอบคำถาม</p>
-            <p class="game-desc">ดูอักษรจีนและพินอิน แล้วเลือกความหมายไทยที่ถูกจาก 4 ตัวเลือก</p>
+            <p class="game-title" id="setTitle"></p>
+            <p class="game-desc" id="setDesc"></p>
           </div>
         </div>
         <hr class="game-sep">
@@ -320,15 +381,8 @@
         </div>
 
         <div class="field">
-          <span class="field-label" id="cntLabel">จำนวนข้อ</span>
-          <div class="seg" role="radiogroup" aria-labelledby="cntLabel">
-            <input class="btn-check" type="radio" name="cnt" id="cnt5" value="5">
-            <label for="cnt5">5 ข้อ</label>
-            <input class="btn-check" type="radio" name="cnt" id="cnt10" value="10" checked>
-            <label for="cnt10">10 ข้อ</label>
-            <input class="btn-check" type="radio" name="cnt" id="cnt15" value="15">
-            <label for="cnt15">15 ข้อ</label>
-          </div>
+          <span class="field-label" id="cntLabel"></span>
+          <div class="seg" id="cntSeg" role="radiogroup" aria-labelledby="cntLabel"></div>
         </div>
 
         <p class="info-line" id="infoLine"></p>
@@ -336,10 +390,14 @@
       </section>
     </section>
 
-    <!-- ===== ระหว่างเล่น ===== -->
+    <!-- ===== 3) เล่นเกม: ตอบคำถาม ===== -->
     <section id="vPlay" class="d-none">
       <div class="hud">
         <span class="hud-step" id="hudStep"></span>
+        <span class="hud-timer" id="hudTimer" aria-label="เวลาที่เหลือ">
+          <i class="bi bi-stopwatch"></i><span><span id="timeNum">30</span> วิ</span>
+          <span class="bonus" id="bonus" aria-hidden="true">+2</span>
+        </span>
         <span class="hud-score" id="hudScore"></span>
       </div>
       <div class="pbar" role="progressbar" aria-label="ความคืบหน้า"><div class="pfill" id="pfill"></div></div>
@@ -358,31 +416,45 @@
       </div>
 
       <div class="visually-hidden" id="fb" role="status" aria-live="polite"></div>
-      <button type="button" class="btn btn-seal w-100" id="nextBtn" style="visibility:hidden">ข้อต่อไป</button>
     </section>
 
-    <!-- ===== สรุปผล ===== -->
-    <section id="vResult" class="d-none">
-      <section class="card-box text-center">
-        <div class="seal lg hanzi mx-auto" aria-hidden="true">完</div>
-        <p class="score"><span id="resCorrect"></span> <small>/ <span id="resTotal"></span></small></p>
-        <p class="res-msg" id="resMsg"></p>
-        <p class="res-time" id="resTime"></p>
-        <div class="notice d-none" id="saveNote" role="alert">บันทึกสถิติไม่สำเร็จ พื้นที่เก็บข้อมูลของเบราว์เซอร์อาจเต็มหรือถูกปิดไว้</div>
-      </section>
-
-      <section class="mt-3 d-none" id="missWrap">
-        <p class="miss-title" id="missTitle"></p>
-        <div class="list" id="missList"></div>
-      </section>
-
-      <div class="d-flex gap-2 mt-3">
-        <button type="button" class="btn btn-seal flex-fill" id="againBtn">เล่นอีกครั้ง</button>
-        <button type="button" class="btn-ghost" id="menuBtn">เลือกเกม</button>
+    <!-- ===== 4) เล่นเกม: จับคู่คำศัพท์ ===== -->
+    <section id="vMatch" class="d-none">
+      <div class="hud">
+        <span class="hud-step" id="mStep"></span>
+        <span class="hud-timer" aria-label="เวลาที่ใช้"><i class="bi bi-stopwatch"></i><span id="mTime">0:00</span></span>
+        <span class="hud-score" id="mMiss"></span>
       </div>
+      <div class="pbar" role="progressbar" aria-label="ความคืบหน้า"><div class="pfill" id="mFill"></div></div>
+      <p class="q-ask mt-0">แตะอักษรจีน 1 ใบ แล้วแตะความหมายที่ตรงกัน</p>
+      <div class="board" id="board"></div>
     </section>
 
   </main>
+
+  <!-- ================= [เฉพาะหน้า] ป๊อบอัพสรุปผล ================= -->
+  <div class="modal fade" id="resModal" tabindex="-1" aria-labelledby="resTitle" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-body text-center pt-4">
+          <h2 class="modal-title" id="resTitle"></h2>
+          <div class="seal lg hanzi mx-auto mt-3" id="resSeal" aria-hidden="true">完</div>
+          <p class="score"><span id="resMain"></span> <small id="resSub"></small></p>
+          <p class="res-msg" id="resMsg"></p>
+          <p class="res-time" id="resTime"></p>
+          <div class="notice d-none" id="saveNote" role="alert">บันทึกสถิติไม่สำเร็จ พื้นที่เก็บข้อมูลของเบราว์เซอร์อาจเต็มหรือถูกปิดไว้</div>
+          <div class="text-start mt-3 d-none" id="missWrap">
+            <p class="miss-title" id="missTitle"></p>
+            <div class="list" id="missList"></div>
+          </div>
+        </div>
+        <div class="modal-footer justify-content-center flex-nowrap gap-2">
+          <button type="button" class="btn btn-seal flex-fill" id="againBtn">เล่นอีกครั้ง</button>
+          <button type="button" class="btn-ghost" id="menuBtn">เลือกเกม</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- ================= [ส่วนกลาง] Bottom Navbar ================= -->
   <nav class="dock" aria-label="เมนูหลัก">
@@ -394,10 +466,13 @@
     <a class="dock-item" href="add.html"><i class="bi bi-plus-circle"></i><span class="lbl">เพิ่ม</span></a>
   </nav>
 
+  <!-- Bootstrap JS (ใช้กับป๊อบอัพสรุปผล) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
   <!-- ============================================================
        JavaScript
        ส่วน [ส่วนกลาง] = ระบบ navbar ใช้เหมือนกันทุกหน้า
-       ส่วน [เฉพาะหน้า] = เกมตอบคำถาม
+       ส่วน [เฉพาะหน้า] = ระบบเกม (เมนูเลือกเกม, ตอบคำถาม, จับคู่)
        ============================================================ -->
   <script>
     /* ---------- [ส่วนกลาง] ระบบ Bottom Navbar ---------- */
@@ -450,13 +525,19 @@
     })();
 
 
-    /* ---------- [เฉพาะหน้า] เกม: ตอบคำถาม ---------- */
+    /* ---------- [เฉพาะหน้า] ระบบเกม ---------- */
     (function () {
       const KEY_ITEMS   = 'pjee_items';
       const KEY_SETS    = 'pjee_sets';
       const KEY_HISTORY = 'pjee_history';
       const NONE = '_none';                          // รายการเก่าที่ไม่มีชุด
       const TAGS = ['ก', 'ข', 'ค', 'ง'];
+
+      // ตั้งค่าเกมตอบคำถาม
+      const QUIZ_START_SEC = 30;                     // เวลาเริ่มต้น (วินาที)
+      const QUIZ_BONUS_SEC = 2;                      // ตอบถูกได้เวลาเพิ่ม (วินาที)
+      const FLASH_OK_MS = 350;                       // โชว์เฉลยสั้นๆ ก่อนไปข้อต่อไป (ตอบถูก)
+      const FLASH_BAD_MS = 800;                      // (ตอบผิด ให้เห็นคำตอบที่ถูกนานขึ้นหน่อย)
 
       const read = k => {
         try { const v = JSON.parse(localStorage.getItem(k)); return Array.isArray(v) ? v : []; }
@@ -479,6 +560,8 @@
       const typeOf = it => it.type === 'sentence' ? 'sentence' : 'word';
       const pad = n => String(n).padStart(2, '0');
       const dayKey = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;   // YYYY-MM-DD ตามเวลาเครื่อง
+      const fmtTime = s => s < 60 ? `${s} วินาที` : `${Math.floor(s / 60)} นาที ${s % 60} วินาที`;
+      const fmtClock = ms => { const s = Math.floor(ms / 1000); return `${Math.floor(s / 60)}:${pad(s % 60)}`; };
 
       function shuffle(a) {
         for (let i = a.length - 1; i > 0; i--) {
@@ -509,8 +592,199 @@
         if (orphan.items.length) groups.push(orphan);
         return { items, groups };
       }
+      let D = loadData();
+      const distinctOf = list => new Set(list.map(i => key(i.meaning))).size;
+      function poolFor(scope) {
+        if (scope === 'all') return D.items;
+        const g = D.groups.find(x => x.id === scope);
+        return g ? g.items : D.items;
+      }
 
-      /* ----- สร้างโจทย์: คำตอบที่ถูก + ตัวหลอก 3 ข้อ (เลือกประเภทเดียวกันก่อน) ----- */
+      /* ----- บันทึกผลลงประวัติ (หน้าสถิติและหน้าหลักอ่านจากตรงนี้) ----- */
+      function saveHistory(entry) {
+        const hist = read(KEY_HISTORY);
+        hist.push({
+          id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+          date: dayKey(new Date()),
+          playedAt: new Date().toISOString(),
+          ...entry
+        });
+        return write(KEY_HISTORY, hist);
+      }
+
+      /* ===================== สลับหน้าจอ ===================== */
+      const VIEWS = ['vMenu', 'vSetup', 'vPlay', 'vMatch'];
+      const show = id => {
+        VIEWS.forEach(v => $(v).classList.toggle('d-none', v !== id));
+        window.scrollTo(0, 0);
+      };
+
+      /* ===================== ป๊อบอัพสรุปผล ===================== */
+      const resModal = new bootstrap.Modal($('resModal'));
+
+      function showResult(r) {
+        $('resTitle').textContent = r.title;
+        $('resSeal').textContent = r.glyph;
+        $('resMain').textContent = r.main;
+        $('resSub').textContent = r.sub;
+        $('resMsg').textContent = r.msg;
+        $('resTime').textContent = r.time;
+        $('saveNote').classList.toggle('d-none', r.saved);
+
+        const list = $('missList');
+        list.replaceChildren();
+        $('missWrap').classList.toggle('d-none', r.wrongs.length === 0);
+        $('missTitle').textContent = `${r.wrongLabel} (${r.wrongs.length})`;
+        r.wrongs.forEach(it => {
+          const card = el('article', 'card-box miss');
+          const left = el('div', 'min-w-0');
+          const h = el('p', 'miss-hanzi', it.hanzi); h.lang = 'zh-CN';
+          left.append(h, el('p', 'miss-pinyin', it.pinyin || ''), el('p', 'miss-meaning', it.meaning));
+          card.append(left);
+          if (canSpeak) {
+            const b = el('button', 'icon-btn');
+            b.type = 'button'; b.setAttribute('aria-label', 'ฟังเสียง');
+            b.innerHTML = '<i class="bi bi-volume-up"></i>';
+            b.addEventListener('click', () => speak(it.hanzi));
+            card.append(b);
+          }
+          list.append(card);
+        });
+        resModal.show();
+      }
+
+      /* ===================== รายการเกม (เพิ่มเกมใหม่ตรงนี้) ===================== */
+      const GAMES = {
+        quiz: {
+          glyph: '问', title: 'ตอบคำถาม',
+          desc: 'ดูอักษรจีนและพินอิน แล้วเลือกความหมายไทยที่ถูกจาก 4 ตัวเลือก มีเวลานับถอยหลัง ตอบถูกได้เวลาเพิ่ม',
+          countLabel: 'จำนวนข้อ', unit: 'ข้อ', counts: [5, 10, 15], defCount: 10,
+          minDistinct: 4,
+          need: n => `ต้องมีอย่างน้อย 4 รายการที่ความหมายไม่ซ้ำกัน เพื่อทำตัวเลือก 4 ข้อ ตอนนี้มี ${n} รายการ`,
+          info: (pool, count) => ({
+            text: `จะได้เล่น ${Math.min(count, pool.length)} ข้อ จากทั้งหมด ${pool.length} รายการ\nเริ่มที่ ${QUIZ_START_SEC} วินาที ตอบถูกได้เวลาเพิ่ม ${QUIZ_BONUS_SEC} วินาที`,
+            ok: pool.length > 0
+          }),
+          start: opts => startQuiz(opts)
+        },
+        match: {
+          glyph: '配', title: 'จับคู่คำศัพท์',
+          desc: 'จับคู่อักษรจีนกับความหมายไทยให้ครบทุกคู่ ให้เร็วและผิดน้อยที่สุด',
+          countLabel: 'จำนวนคู่', unit: 'คู่', counts: [5, 8, 10], defCount: 5,
+          minDistinct: 3,
+          need: n => `ต้องมีอย่างน้อย 3 รายการที่ความหมายไม่ซ้ำกัน ตอนนี้มี ${n} รายการ`,
+          info: (pool, count) => {
+            const u = distinctOf(pool);
+            return u < 3
+              ? { text: 'ชุดนี้มีรายการที่ความหมายไม่ซ้ำน้อยกว่า 3 รายการ เล่นเกมนี้ไม่ได้ ลองเลือกชุดอื่น', ok: false }
+              : { text: `จะได้จับคู่ ${Math.min(count, u)} คู่ จากทั้งหมด ${u} รายการ`, ok: true };
+          },
+          start: opts => startMatch(opts)
+        }
+      };
+      let curGame = null;              // เกมที่กำลังดูหน้าตั้งค่า
+      let lastRun = null;              // เกมล่าสุดที่เล่น (ไว้ใช้กด "เล่นอีกครั้ง")
+
+      /* ----- หน้า 1: เลือกเกม ----- */
+      function renderMenu() {
+        const box = $('gameList');
+        box.replaceChildren();
+        Object.entries(GAMES).forEach(([id, g]) => {
+          const b = el('button', 'card-box gamecard');
+          b.type = 'button';
+          const seal = el('div', 'seal hanzi', g.glyph); seal.setAttribute('aria-hidden', 'true');
+          const text = el('div', 'min-w-0');
+          text.append(el('p', 'game-title', g.title), el('p', 'game-desc', g.desc));
+          const chev = el('i', 'bi bi-chevron-right chev'); chev.setAttribute('aria-hidden', 'true');
+          b.append(seal, text, chev);
+          b.addEventListener('click', () => openSetup(id));
+          box.append(b);
+        });
+      }
+
+      function goMenu() {
+        stopAll();
+        renderMenu();
+        show('vMenu');
+      }
+      $('backBtn').addEventListener('click', goMenu);
+      $('menuBtn').addEventListener('click', () => { resModal.hide(); goMenu(); });
+      $('againBtn').addEventListener('click', () => {
+        resModal.hide();
+        if (lastRun) GAMES[lastRun.id].start(lastRun.opts);
+      });
+
+      /* ----- หน้า 2: ตั้งค่าเกมที่เลือก ----- */
+      function chosenCount() { return +document.querySelector('input[name="cnt"]:checked').value; }
+
+      function updateInfo() {
+        const g = GAMES[curGame];
+        const r = g.info(poolFor($('scope').value), chosenCount());
+        $('infoLine').textContent = r.text;
+        $('startBtn').disabled = !r.ok;
+      }
+
+      function refreshSetup() {
+        D = loadData();
+        const g = GAMES[curGame];
+        const ok = distinctOf(D.items) >= g.minDistinct;
+        $('needMore').classList.toggle('d-none', ok);
+        $('gameBody').classList.toggle('d-none', !ok);
+        $('needText').textContent = g.need(D.items.length);
+        if (!ok) return;
+
+        const sel = $('scope'), prev = sel.value;
+        sel.replaceChildren();
+        const add = (v, t) => { const o = el('option', '', t); o.value = v; sel.append(o); };
+        add('all', `ทุกชุด (${D.items.length} รายการ)`);
+        D.groups.forEach(x => add(x.id, `${x.name} (${x.items.length})`));
+        sel.value = [...sel.options].some(o => o.value === prev) ? prev : 'all';
+        updateInfo();
+      }
+
+      function openSetup(id) {
+        curGame = id;
+        const g = GAMES[id];
+        $('setGlyph').textContent = g.glyph;
+        $('setTitle').textContent = g.title;
+        $('setDesc').textContent = g.desc;
+        $('cntLabel').textContent = g.countLabel;
+
+        const seg = $('cntSeg');
+        seg.replaceChildren();
+        g.counts.forEach(n => {
+          const inp = el('input', 'btn-check');
+          inp.type = 'radio'; inp.name = 'cnt'; inp.id = 'cnt' + n; inp.value = n;
+          inp.checked = n === g.defCount;
+          inp.addEventListener('change', updateInfo);
+          const lb = el('label', '', `${n} ${g.unit}`);
+          lb.htmlFor = inp.id;
+          seg.append(inp, lb);
+        });
+
+        $('scope').value = 'all';
+        refreshSetup();
+        show('vSetup');
+      }
+
+      $('scope').addEventListener('change', updateInfo);
+      $('startBtn').addEventListener('click', () => GAMES[curGame].start({ scope: $('scope').value, count: chosenCount() }));
+
+      /* ===================== หยุดตัวจับเวลาทั้งหมด ===================== */
+      let quizTimer = null, matchTimer = null;
+      function stopAll() {
+        clearInterval(quizTimer); quizTimer = null;
+        clearInterval(matchTimer); matchTimer = null;
+        if (game) game.over = true;
+        if (mg) mg.over = true;
+      }
+
+      /* =====================================================
+         เกม: ตอบคำถาม
+         ===================================================== */
+      let game = null;
+
+      // สร้างโจทย์: คำตอบที่ถูก + ตัวหลอก 3 ข้อ (เลือกประเภทเดียวกันก่อน)
       function makeQuestions(pool, all, n) {
         return shuffle(pool.slice()).slice(0, n).map(it => {
           const others = all.filter(x => x.id !== it.id && key(x.meaning) !== key(it.meaning));
@@ -529,60 +803,42 @@
         });
       }
 
-      const show = id => {
-        ['vStart', 'vPlay', 'vResult'].forEach(v => $(v).classList.toggle('d-none', v !== id));
-        window.scrollTo(0, 0);
-      };
-
-      /* ===================== หน้าตั้งค่า ===================== */
-      let D = loadData();
-
-      function poolFor(scope) {
-        if (scope === 'all') return D.items;
-        const g = D.groups.find(x => x.id === scope);
-        return g ? g.items : D.items;
-      }
-      function chosenCount() { return +document.querySelector('input[name="cnt"]:checked').value; }
-
-      function updateInfo() {
-        const pool = poolFor($('scope').value);
-        const n = Math.min(chosenCount(), pool.length);
-        $('infoLine').textContent = `จะได้เล่น ${n} ข้อ จากทั้งหมด ${pool.length} รายการ`;
-      }
-
-      function refreshStart() {
-        D = loadData();
-        const distinct = new Set(D.items.map(i => key(i.meaning))).size;
-        const ok = distinct >= 4;
-        $('needMore').classList.toggle('d-none', ok);
-        $('gameBody').classList.toggle('d-none', !ok);
-        $('needCount').textContent = D.items.length;
-        if (!ok) return;
-
-        const sel = $('scope'), prev = sel.value;
-        sel.replaceChildren();
-        const add = (v, t) => { const o = el('option', '', t); o.value = v; sel.append(o); };
-        add('all', `ทุกชุด (${D.items.length} รายการ)`);
-        D.groups.forEach(g => add(g.id, `${g.name} (${g.items.length})`));
-        sel.value = [...sel.options].some(o => o.value === prev) ? prev : 'all';
-        updateInfo();
-      }
-
-      $('scope').addEventListener('change', updateInfo);
-      document.querySelectorAll('input[name="cnt"]').forEach(r => r.addEventListener('change', updateInfo));
-      $('startBtn').addEventListener('click', () => startQuiz({ scope: $('scope').value, count: chosenCount() }));
-
-      /* ===================== ตัวเกม ===================== */
-      let game = null;
-
       function startQuiz(opts) {
+        stopAll();
         D = loadData();
         const pool = poolFor(opts.scope);
-        if (!pool.length || new Set(D.items.map(i => key(i.meaning))).size < 4) { refreshStart(); show('vStart'); return; }
+        if (!pool.length || distinctOf(D.items) < 4) { openSetup('quiz'); return; }
         const qs = makeQuestions(pool, D.items, Math.min(opts.count, pool.length));
-        game = { opts, qs, i: 0, correct: 0, wrongs: [], answered: false, t0: Date.now() };
+        lastRun = { id: 'quiz', opts };
+        game = {
+          opts, qs, i: 0, correct: 0, answeredCount: 0, wrongs: [],
+          answered: false, over: false, paused: false,
+          left: QUIZ_START_SEC * 1000, last: performance.now(), t0: Date.now()
+        };
         show('vPlay');
         renderQ();
+        updateTimeUI();
+        quizTimer = setInterval(tick, 100);
+      }
+
+      // ตัวนับเวลาถอยหลัง (หยุดชั่วคราวตอนโชว์เฉลย)
+      function tick() {
+        if (!game || game.over) return;
+        const now = performance.now();
+        if (!game.paused) game.left -= now - game.last;
+        game.last = now;
+        if (game.left <= 0) { game.left = 0; updateTimeUI(); finishQuiz('time'); return; }
+        updateTimeUI();
+      }
+      function updateTimeUI() {
+        const s = Math.ceil(game.left / 1000);
+        $('timeNum').textContent = s;
+        $('hudTimer').classList.toggle('low', s <= 10);
+      }
+      function flashBonus() {
+        const b = $('bonus');
+        b.textContent = '+' + QUIZ_BONUS_SEC;
+        b.classList.remove('show'); void b.offsetWidth; b.classList.add('show');
       }
 
       function renderQ() {
@@ -611,11 +867,7 @@
           b.append(el('span', 'choice-tag', TAGS[idx]), el('span', 'choice-text', c), mark);
           box.append(b);
         });
-
         $('fb').textContent = '';
-        const nb = $('nextBtn');
-        nb.style.visibility = 'hidden';
-        nb.textContent = game.i === total - 1 ? 'ดูผลคะแนน' : 'ข้อต่อไป';
 
         // เล่นแอนิเมชันเข้าของโจทย์ใหม่
         const w = $('qWrap');
@@ -623,9 +875,11 @@
       }
 
       function answer(idx) {
-        if (!game || game.answered) return;
-        game.answered = true;
-        const q = game.qs[game.i];
+        const g = game;
+        if (!g || g.answered || g.over) return;
+        g.answered = true;
+        g.paused = true;                                   // หยุดเวลาระหว่างโชว์เฉลย
+        const q = g.qs[g.i];
         const ok = q.choices[idx] === q.answer;
 
         [...$('choices').children].forEach((b, j) => {
@@ -636,14 +890,20 @@
           else                           { b.classList.add('dim'); }
         });
 
-        if (ok) game.correct++; else game.wrongs.push(q.item);
-        $('hudScore').textContent = `ถูก ${game.correct}`;
+        g.answeredCount++;
+        if (ok) { g.correct++; g.left += QUIZ_BONUS_SEC * 1000; flashBonus(); updateTimeUI(); }
+        else g.wrongs.push(q.item);
+        $('hudScore').textContent = `ถูก ${g.correct}`;
         $('fb').textContent = ok ? 'ถูกต้อง' : 'ผิด คำตอบที่ถูกคือ ' + q.answer;
 
-        const nb = $('nextBtn');
-        nb.style.visibility = 'visible';
-        nb.focus({ preventScroll: true });
-        nb.scrollIntoView({ block: 'nearest', behavior: reduce ? 'auto' : 'smooth' });
+        // ไปข้อต่อไปเอง (ไม่ต้องกดปุ่ม)
+        setTimeout(() => {
+          if (game !== g || g.over) return;
+          g.paused = false;
+          g.last = performance.now();
+          g.i++;
+          if (g.i >= g.qs.length) finishQuiz('done'); else renderQ();
+        }, ok ? FLASH_OK_MS : FLASH_BAD_MS);
       }
 
       $('choices').addEventListener('click', e => {
@@ -652,80 +912,179 @@
       });
       // กดเลข 1-4 บนคีย์บอร์ดเพื่อเลือกคำตอบ
       document.addEventListener('keydown', e => {
-        if (!game || $('vPlay').classList.contains('d-none') || game.answered) return;
+        if (!game || game.over || game.answered || $('vPlay').classList.contains('d-none')) return;
         if (e.ctrlKey || e.metaKey || e.altKey) return;
         const n = parseInt(e.key, 10);
-        if (n >= 1 && n <= 4 && n <= game.qs[game.i].choices.length) answer(n - 1);
+        if (n >= 1 && n <= game.qs[game.i].choices.length) answer(n - 1);
       });
       $('speakQ').addEventListener('click', () => { if (game) speak(game.qs[game.i].item.hanzi); });
-      $('nextBtn').addEventListener('click', () => {
-        if (!game || !game.answered) return;
-        game.i++;
-        if (game.i >= game.qs.length) finish(); else renderQ();
-      });
 
-      /* ===================== สรุปผล ===================== */
-      const fmtTime = s => s < 60 ? `${s} วินาที` : `${Math.floor(s / 60)} นาที ${s % 60} วินาที`;
+      function finishQuiz(reason) {
+        const g = game;
+        if (!g || g.over) return;
+        g.over = true;
+        clearInterval(quizTimer); quizTimer = null;
 
-      function finish() {
-        const total = game.qs.length, correct = game.correct;
-        const durationSec = Math.max(1, Math.round((Date.now() - game.t0) / 1000));
+        const total = g.qs.length, correct = g.correct;
+        const durationSec = Math.max(1, Math.round((Date.now() - g.t0) / 1000));
         const pct = Math.round(correct / total * 100);
+        const timeUp = reason === 'time';
 
-        // บันทึกลงประวัติ (หน้าสถิติและหน้าหลักอ่านจากตรงนี้)
-        const hist = read(KEY_HISTORY);
-        hist.push({
-          id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
-          date: dayKey(new Date()),
-          playedAt: new Date().toISOString(),
-          mode: 'quiz',
-          total, correct, wrong: total - correct,
-          durationSec,
-          wrongItemIds: game.wrongs.map(i => i.id)
+        // บันทึกเฉพาะรอบที่ตอบไปอย่างน้อย 1 ข้อ
+        let saved = true;
+        if (g.answeredCount > 0) {
+          saved = saveHistory({
+            mode: 'quiz',
+            total: g.answeredCount, correct, wrong: g.answeredCount - correct,
+            planned: total, timeUp,
+            durationSec,
+            wrongItemIds: g.wrongs.map(i => i.id)
+          });
+        }
+
+        $('pfill').style.width = (g.answeredCount / total * 100) + '%';
+        showResult({
+          title: timeUp ? 'หมดเวลา' : 'จบเกมแล้ว',
+          glyph: timeUp ? '时' : '完',
+          main: correct, sub: `/ ${total}`,
+          msg: timeUp
+            ? `ตอบไป ${g.answeredCount} จาก ${total} ข้อ ถูก ${correct} ข้อ`
+            : `${pct}%  ` + (pct === 100 ? 'ถูกทุกข้อ ยอดเยี่ยม' : pct >= 80 ? 'เก่งมาก' : pct >= 60 ? 'ดีแล้ว ทบทวนอีกนิดจะแม่นขึ้น' : 'ลองอีกรอบ จะจำได้มากขึ้น'),
+          time: 'ใช้เวลา ' + fmtTime(durationSec),
+          saved, wrongs: g.wrongs, wrongLabel: 'คำที่ตอบผิด'
         });
-        const saved = write(KEY_HISTORY, hist);
-
-        $('resCorrect').textContent = correct;
-        $('resTotal').textContent = total;
-        $('resMsg').textContent = `${pct}%  ` + (pct === 100 ? 'ถูกทุกข้อ ยอดเยี่ยม' : pct >= 80 ? 'เก่งมาก' : pct >= 60 ? 'ดีแล้ว ทบทวนอีกนิดจะแม่นขึ้น' : 'ลองอีกรอบ จะจำได้มากขึ้น');
-        $('resTime').textContent = 'ใช้เวลา ' + fmtTime(durationSec);
-        $('saveNote').classList.toggle('d-none', saved);
-
-        // รายการที่ตอบผิด
-        const list = $('missList');
-        list.replaceChildren();
-        $('missWrap').classList.toggle('d-none', game.wrongs.length === 0);
-        $('missTitle').textContent = `คำที่ตอบผิด (${game.wrongs.length})`;
-        game.wrongs.forEach(it => {
-          const card = el('article', 'card-box miss');
-          const left = el('div', 'min-w-0');
-          const h = el('p', 'miss-hanzi', it.hanzi); h.lang = 'zh-CN';
-          left.append(h, el('p', 'miss-pinyin', it.pinyin || ''), el('p', 'miss-meaning', it.meaning));
-          card.append(left);
-          if (canSpeak) {
-            const b = el('button', 'icon-btn');
-            b.type = 'button'; b.setAttribute('aria-label', 'ฟังเสียง');
-            b.innerHTML = '<i class="bi bi-volume-up"></i>';
-            b.addEventListener('click', () => speak(it.hanzi));
-            card.append(b);
-          }
-          list.append(card);
-        });
-
-        $('pfill').style.width = '100%';
-        show('vResult');
       }
 
-      $('againBtn').addEventListener('click', () => startQuiz(game.opts));
-      $('menuBtn').addEventListener('click', () => { refreshStart(); show('vStart'); });
+      /* =====================================================
+         เกม: จับคู่คำศัพท์
+         ===================================================== */
+      let mg = null;
+
+      function startMatch(opts) {
+        stopAll();
+        D = loadData();
+        const pool = poolFor(opts.scope);
+        // เลือกเฉพาะรายการที่ความหมายไม่ซ้ำกัน (กันจับคู่กำกวม)
+        const seen = new Set(), uniq = [];
+        shuffle(pool.slice()).forEach(it => {
+          const k = key(it.meaning);
+          if (!seen.has(k)) { seen.add(k); uniq.push(it); }
+        });
+        const items = uniq.slice(0, opts.count);
+        if (items.length < 3) { openSetup('match'); return; }
+
+        const left = shuffle(items.slice());
+        let right = shuffle(items.slice());
+        for (let t = 0; t < 10 && right.every((x, i) => x === left[i]); t++) right = shuffle(items.slice());
+
+        lastRun = { id: 'match', opts };
+        mg = { opts, items, left, right, matched: 0, mistakes: 0, wrongIds: new Set(), selL: null, selR: null, busy: false, over: false, t0: Date.now() };
+        renderBoard();
+        show('vMatch');
+        matchTimer = setInterval(() => { if (mg && !mg.over) $('mTime').textContent = fmtClock(Date.now() - mg.t0); }, 250);
+      }
+
+      function updateMatchHud() {
+        $('mStep').textContent = `จับคู่แล้ว ${mg.matched} / ${mg.items.length}`;
+        $('mMiss').textContent = `ผิด ${mg.mistakes}`;
+        $('mFill').style.width = (mg.matched / mg.items.length * 100) + '%';
+      }
+
+      function renderBoard() {
+        $('mTime').textContent = '0:00';
+        updateMatchHud();
+        const board = $('board');
+        board.replaceChildren();
+
+        const colL = el('div', 'bcol'), colR = el('div', 'bcol');
+        mg.left.forEach(it => {
+          const b = el('button', 'mcard' + (typeOf(it) === 'sentence' ? ' is-sentence' : ''));
+          b.type = 'button'; b.dataset.side = 'L'; b.dataset.id = it.id;
+          const h = el('span', 'mc-hanzi', it.hanzi); h.lang = 'zh-CN';
+          b.append(h);
+          if (it.pinyin) b.append(el('span', 'mc-pinyin', it.pinyin));
+          colL.append(b);
+        });
+        mg.right.forEach(it => {
+          const b = el('button', 'mcard');
+          b.type = 'button'; b.dataset.side = 'R'; b.dataset.id = it.id;
+          b.append(el('span', 'mc-meaning', it.meaning));
+          colR.append(b);
+        });
+        board.append(colL, colR);
+      }
+
+      const cardOf = (side, id) => $('board').querySelector(`.mcard[data-side="${side}"][data-id="${CSS.escape(id)}"]`);
+
+      $('board').addEventListener('click', e => {
+        const b = e.target.closest('.mcard');
+        const g = mg;
+        if (!b || !g || g.over || g.busy || b.classList.contains('matched')) return;
+        const side = b.dataset.side, id = b.dataset.id, k = side === 'L' ? 'selL' : 'selR';
+
+        if (g[k] === id) { g[k] = null; b.classList.remove('sel'); return; }            // แตะซ้ำ = ยกเลิกเลือก
+        $('board').querySelectorAll(`.mcard[data-side="${side}"].sel`).forEach(x => x.classList.remove('sel'));
+        g[k] = id; b.classList.add('sel');
+        if (g.selL && g.selR) evaluatePair(g);
+      });
+
+      function evaluatePair(g) {
+        const L = g.selL, R = g.selR;
+        const bl = cardOf('L', L), br = cardOf('R', R);
+        if (L === R) {
+          [bl, br].forEach(c => { c.classList.remove('sel'); c.classList.add('matched'); c.disabled = true; });
+          g.selL = g.selR = null;
+          g.matched++;
+          updateMatchHud();
+          const it = g.items.find(x => x.id === L);
+          if (it) speak(it.hanzi);
+          if (g.matched === g.items.length) setTimeout(() => finishMatch(g), 600);
+        } else {
+          g.mistakes++;
+          g.wrongIds.add(L);                               // นับความผิดพลาดให้กับคำที่เป็นอักษรจีน
+          g.busy = true;
+          bl.classList.add('bad'); br.classList.add('bad');
+          updateMatchHud();
+          setTimeout(() => {
+            [bl, br].forEach(c => c.classList.remove('bad', 'sel'));
+            g.selL = g.selR = null;
+            g.busy = false;
+          }, 450);
+        }
+      }
+
+      function finishMatch(g) {
+        if (mg !== g || g.over) return;
+        g.over = true;
+        clearInterval(matchTimer); matchTimer = null;
+
+        const n = g.items.length, m = g.mistakes;
+        const durationSec = Math.max(1, Math.round((Date.now() - g.t0) / 1000));
+        const saved = saveHistory({
+          mode: 'match',
+          total: n + m, correct: n, wrong: m,               // นับทุกครั้งที่จับคู่: จับถูก n ครั้ง จับผิด m ครั้ง
+          durationSec,
+          wrongItemIds: [...g.wrongIds]
+        });
+        const wrongs = g.items.filter(x => g.wrongIds.has(x.id));
+
+        showResult({
+          title: 'จับคู่ครบแล้ว',
+          glyph: '完',
+          main: n, sub: `/ ${n} คู่`,
+          msg: m === 0 ? 'ไม่พลาดเลย ยอดเยี่ยม' : `ผิด ${m} ครั้ง ` + (m <= 2 ? 'เก่งมาก' : m <= 5 ? 'ดีแล้ว ทบทวนอีกนิดจะแม่นขึ้น' : 'ลองอีกรอบ จะจำได้มากขึ้น'),
+          time: 'ใช้เวลา ' + fmtTime(durationSec),
+          saved, wrongs, wrongLabel: 'คำที่จับผิด'
+        });
+      }
 
       /* ----- เริ่มต้น / อัปเดตเมื่อข้อมูลเปลี่ยน ----- */
       window.addEventListener('storage', e => {
-        if ((e.key === KEY_ITEMS || e.key === KEY_SETS) && !$('vStart').classList.contains('d-none')) refreshStart();
+        if ((e.key === KEY_ITEMS || e.key === KEY_SETS) && !$('vSetup').classList.contains('d-none')) refreshSetup();
       });
-      window.addEventListener('pageshow', e => { if (e.persisted) { refreshStart(); show('vStart'); } });
+      window.addEventListener('pageshow', e => { if (e.persisted) { resModal.hide(); goMenu(); } });
 
-      refreshStart();
+      renderMenu();
     })();
   </script>
 </body>
