@@ -287,7 +287,6 @@
     /* เกมเติมช่องว่าง */
     .bk-hint { color: var(--c-mean); font-weight: 500; margin: 8px 0 0; word-break: break-word; }
     .bk-hint small { color: var(--muted); font-weight: 400; font-size: .85rem; }
-    .bk-pinyin { color: var(--c-pinyin); font-size: 1.05rem; margin: 4px 0 0; word-break: break-word; }
     .blank {
       display: inline-block; min-width: 1.1em; margin: 0 .08em; text-align: center; line-height: 1.1;
       border-bottom: 3px solid var(--seal); color: var(--seal);
@@ -529,11 +528,11 @@
         <section class="card-box q-card">
           <p class="q-label">เติมตัวอักษรที่หายไป</p>
           <p class="q-hanzi" id="bkSentence" lang="zh-CN" role="img"></p>
-          <p class="bk-pinyin" id="bkPinyin"></p>
           <p class="bk-hint" id="bkMeaning"></p>
+          <button type="button" class="speak-btn big" id="bkReplay"><i class="bi bi-volume-up"></i> ฟังอีกครั้ง</button>
         </section>
 
-        <p class="q-ask">เลือกตัวอักษรที่ใช่</p>
+        <p class="q-ask">ได้ยินว่าอะไร? เลือกตัวอักษรที่ใช่</p>
         <div class="choices grid2" id="bkChoices"></div>
       </div>
 
@@ -863,7 +862,7 @@
         },
         fill: {
           glyph: '填', title: 'เติมช่องว่าง',
-          desc: 'คำหรือประโยคที่หายไป 1-3 ตัวอักษรแบบสุ่ม เลือกตัวอักษรที่ใช่ทีละช่อง มีพินอินกำกับทั้งคำถามและตัวเลือก มีเวลานับถอยหลัง ตอบถูกได้เวลาเพิ่ม',
+          desc: 'ฟังเสียงอ่านคำหรือประโยคที่หายไป 1-3 ตัวอักษรแบบสุ่ม แล้วเลือกตัวอักษรที่ใช่ทีละช่อง มีพินอินกำกับที่ตัวเลือก มีเวลานับถอยหลัง ตอบถูกได้เวลาเพิ่ม',
           countLabel: 'จำนวนข้อ', unit: 'ข้อ', counts: [5, 10, 15], defCount: 10,
           minDistinct: 1,
           ready: d => fillEligible(d.items).length >= 1 && charBank(d.items).length >= 4,
@@ -872,7 +871,7 @@
             const e = fillEligible(pool).length;
             return e === 0
               ? { text: 'ชุดนี้ไม่มีคำหรือประโยคที่มีอักษรจีนอย่างน้อย 2 ตัว เล่นเกมนี้ไม่ได้ ลองเลือกชุดอื่น', ok: false }
-              : { text: `จะได้เล่น ${Math.min(count, e)} ข้อ จากรายการที่เล่นได้ ${e} รายการ แต่ละข้อสุ่มเว้นช่องว่าง 1-3 ช่อง (ตามความยาวของคำ)\nเริ่มที่ ${FILL_START_SEC} วินาที ตอบถูกได้เวลาเพิ่ม ${FILL_BONUS_SEC} วินาที ต่อ 1 ช่อง\nพินอินของคำจะกำกับไว้ใต้โจทย์ ส่วนพินอินของตัวเลือกจะแสดงเฉพาะตัวที่เคยเพิ่มเป็นคำศัพท์เดี่ยวไว้แล้ว`, ok: true };
+              : { text: `จะได้เล่น ${Math.min(count, e)} ข้อ จากรายการที่เล่นได้ ${e} รายการ แต่ละข้อสุ่มเว้นช่องว่าง 1-3 ช่อง (ตามความยาวของคำ)\nเริ่มที่ ${FILL_START_SEC} วินาที ตอบถูกได้เวลาเพิ่ม ${FILL_BONUS_SEC} วินาที ต่อ 1 ช่อง\nแอปจะอ่านออกเสียงคำ/ประโยคให้ฟังอัตโนมัติ กดฟังอีกครั้งได้ไม่จำกัด พินอินของตัวเลือกจะแสดงเฉพาะตัวที่เคยเพิ่มเป็นคำศัพท์เดี่ยวไว้แล้ว`, ok: true };
           },
           start: opts => startFill(opts)
         },
@@ -1450,9 +1449,6 @@
           return b ? (b.revealed || 'ช่องว่าง') : c;
         }).join(' '));
 
-        // พินอินของทั้งคำ (ช่วยอ่านส่วนที่เหลือ)
-        $('bkPinyin').textContent = q.item.pinyin || '';
-
         // คำใบ้: ความหมายไทย
         const hint = $('bkMeaning');
         hint.replaceChildren(el('small', '', 'คำใบ้: '), document.createTextNode(q.item.meaning));
@@ -1477,6 +1473,12 @@
 
         const w = $('bkWrap');
         w.classList.remove('enter'); void w.offsetWidth; w.classList.add('enter');
+
+        // อ่านออกเสียงให้อัตโนมัติเมื่อขึ้นคำ/ประโยคใหม่ (ไม่อ่านซ้ำทุกครั้งที่เปลี่ยนช่องในคำเดียวกัน)
+        if (g.bi === 0) {
+          const myI = g.i;
+          setTimeout(() => { if (bg === g && !g.over && g.i === myI) speak(q.item.hanzi, $('bkReplay')); }, g.i === 0 ? 0 : QUIZ_AUTOPLAY_DELAY_MS);
+        }
       }
 
       function answerF(idx) {
@@ -1524,6 +1526,7 @@
         const b = e.target.closest('.choice');
         if (b) answerF(+b.dataset.idx);
       });
+      $('bkReplay').addEventListener('click', () => { if (bg && !bg.over) speak(bg.qs[bg.i].item.hanzi, $('bkReplay')); });
       // กดเลข 1-4 บนคีย์บอร์ดเพื่อเลือกคำตอบ
       document.addEventListener('keydown', e => {
         if (!bg || bg.over || bg.answered || $('vFill').classList.contains('d-none')) return;
