@@ -39,6 +39,7 @@
     @keyframes pageIn { from { opacity: 0; } to { opacity: 1; } }
     .app-wrap { max-width: 720px; }
     .hanzi { font-family: 'Noto Serif SC', serif; }
+    .min-w-0 { min-width: 0; }
 
     /* ---------- [ส่วนกลาง] Header + โลโก้ ---------- */
     .topbar {
@@ -128,10 +129,42 @@
     .dock-item.active .ripple { background: rgba(255, 255, 255, .3); }
     @keyframes ripple { to { transform: scale(1); opacity: 0; } }
 
-    /* ---------- [เฉพาะหน้า] หน้าเพิ่ม (วางทีเดียวหลายรายการ) ---------- */
+    /* ---------- [เฉพาะหน้า] หน้าเพิ่ม ---------- */
     .page-title { font-size: 1.4rem; font-weight: 700; margin: 0; }
     .page-sub   { color: var(--muted); margin: 0; }
 
+    /* ตราแดง (ไอคอนตัวเลือก) */
+    .seal {
+      flex: none; width: 52px; height: 52px; border-radius: 8px;
+      background: var(--seal); color: #fff;
+      display: grid; place-items: center;
+      font-size: 30px; line-height: 1;
+      transform: rotate(-3deg);
+      box-shadow: inset 0 0 0 3px rgba(255,255,255,.35);
+    }
+
+    /* หน้าแรก: เลือกว่าจะเพิ่มอะไร */
+    .choice-list { display: flex; flex-direction: column; gap: 10px; }
+    .choicecard {
+      display: flex; align-items: center; gap: 14px; width: 100%; text-align: left;
+      color: var(--ink); transition: border-color .2s, transform .12s;
+    }
+    .choicecard:hover { border-color: var(--jade); }
+    .choicecard:active { transform: scale(.99); }
+    .choicecard:focus-visible { outline: 2px solid var(--jade); outline-offset: 2px; }
+    .choice-title { font-size: 1.15rem; font-weight: 700; margin: 0; }
+    .choice-desc  { color: var(--muted); font-size: .9rem; margin: 0; }
+    .choicecard .chev { flex: none; margin-left: auto; color: var(--muted); }
+
+    /* ปุ่มย้อนกลับไปหน้าเลือก */
+    .back {
+      display: inline-flex; align-items: center; gap: 4px; margin-bottom: 10px;
+      color: var(--muted); background: none; border: 0; padding: 2px 0;
+    }
+    .back:hover { color: var(--ink); }
+    .back:focus-visible { outline: 2px solid var(--jade); outline-offset: 2px; border-radius: 6px; }
+
+    /* ฟอร์มทั่วไป (ใช้ทั้งฟอร์มวางคำและฟอร์มแต่งเนื้อเรื่อง) */
     .field { margin-bottom: 14px; }
     .field-label { font-weight: 500; margin-bottom: 4px; display: block; }
     .field-opt   { color: var(--muted); font-weight: 400; font-size: .85rem; }
@@ -141,8 +174,13 @@
     }
     .form-control:focus { border-color: var(--jade); box-shadow: 0 0 0 3px rgba(47, 125, 109, .2); background: #fff; color: var(--ink); }
     .form-control::placeholder { color: #A9B7B2; }
+    .form-control.is-invalid { border-color: var(--seal); background-image: none; padding-right: .8rem; }
+    .form-control.is-invalid:focus { box-shadow: 0 0 0 3px rgba(200, 55, 45, .18); }
+    .invalid-feedback { color: var(--seal); font-size: .85rem; }
+    .in-hanzi { font-family: 'Noto Serif SC', 'Noto Sans Thai', serif; }
+    textarea.grow { resize: none; overflow: hidden; }
 
-    /* คำอธิบายรูปแบบข้อมูล */
+    /* คำอธิบายรูปแบบข้อมูล (ฟอร์มวางคำ) */
     .fmt { background: var(--paper); border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; }
     .fmt p { margin: 0; font-size: .9rem; }
     .fmt-note { color: var(--muted); }
@@ -152,7 +190,7 @@
       color: var(--ink); font-size: .85rem; white-space: pre-wrap; word-break: break-word;
     }
 
-    /* ช่องวางข้อมูล */
+    /* ช่องวางข้อมูล (ฟอร์มวางคำ) */
     .bulk {
       min-height: 240px; resize: vertical;
       line-height: 1.7; white-space: pre; overflow: auto;
@@ -204,49 +242,119 @@
   <!-- ================= [เฉพาะหน้า] เนื้อหาหน้าเพิ่ม ================= -->
   <main class="container app-wrap py-3">
 
-    <div class="mb-3">
-      <h1 class="page-title">เพิ่มคำหรือประโยค</h1>
-      <p class="page-sub">วางได้ครั้งละไม่เกิน 15 รายการ บันทึกเป็น 1 ชุดในหน้าบทเรียน</p>
-    </div>
+    <!-- ===== 1) เลือกว่าจะเพิ่มอะไร ===== -->
+    <section id="vChoose">
+      <div class="mb-3">
+        <h1 class="page-title">เพิ่มเนื้อหา</h1>
+        <p class="page-sub">เลือกสิ่งที่จะเพิ่มเข้าบทเรียน</p>
+      </div>
+      <div class="choice-list">
+        <button type="button" class="card-box choicecard" id="goWord">
+          <div class="seal hanzi" aria-hidden="true">词</div>
+          <div class="min-w-0">
+            <p class="choice-title">คำศัพท์ / ประโยค</p>
+            <p class="choice-desc">วางคำหรือประโยคทีละชุด (สูงสุด 15 รายการ) ไว้เล่นเกมและทบทวน</p>
+          </div>
+          <i class="bi bi-chevron-right chev" aria-hidden="true"></i>
+        </button>
+        <button type="button" class="card-box choicecard" id="goStory">
+          <div class="seal hanzi" aria-hidden="true">文</div>
+          <div class="min-w-0">
+            <p class="choice-title">แต่งเนื้อเรื่อง</p>
+            <p class="choice-desc">เขียนเรื่องสั้นหรือบทความภาษาจีน พร้อมคำแปล ไว้อ่านฝึกและท่องจำ</p>
+          </div>
+          <i class="bi bi-chevron-right chev" aria-hidden="true"></i>
+        </button>
+      </div>
+    </section>
 
-    <form id="addForm" class="card-box" novalidate autocomplete="off">
+    <!-- ===== 2) เพิ่มคำศัพท์ / ประโยค (วางทีละชุด) ===== -->
+    <section id="vWord" class="d-none">
+      <button type="button" class="back" id="backFromWord"><i class="bi bi-chevron-left"></i> เลือกสิ่งที่จะเพิ่ม</button>
 
-      <div class="field">
-        <label class="field-label" for="setName">ชื่อชุด <span class="field-opt">(ไม่บังคับ)</span></label>
-        <input class="form-control" id="setName" type="text" maxlength="40">
+      <div class="mb-3">
+        <h1 class="page-title">เพิ่มคำหรือประโยค</h1>
+        <p class="page-sub">วางได้ครั้งละไม่เกิน 15 รายการ บันทึกเป็น 1 ชุดในหน้าบทเรียน</p>
       </div>
 
-      <div class="fmt">
-        <p>1 บรรทัด = 1 รายการ คั่น 4 ช่องด้วย <b>|</b> หรือ <b>Tab</b></p>
-        <code>อักษรจีน | พินอิน | คำอ่านไทย | ความหมายไทย</code>
-        <p class="fmt-note">คัดลอกจากตารางใน Excel หรือ Google Sheets มาวางได้เลย ระบบแยกให้เองว่าเป็นคำหรือประโยค</p>
-      </div>
+      <form id="addForm" class="card-box" novalidate autocomplete="off">
 
-      <label class="field-label" for="bulk">ข้อมูลที่จะเพิ่ม</label>
-      <textarea class="form-control bulk" id="bulk" wrap="off" spellcheck="false" autocapitalize="off" autocorrect="off"></textarea>
-
-      <div class="bulk-bar">
-        <p class="bulk-status" id="status" aria-live="polite">วางข้อมูลในช่องด้านบนได้เลย</p>
-        <div class="d-flex align-items-center gap-1">
-          <button type="button" class="link-btn d-none" id="clearBtn">ล้าง</button>
-          <span class="counter" id="counter">0 / 15</span>
+        <div class="field">
+          <label class="field-label" for="setName">ชื่อชุด <span class="field-opt">(ไม่บังคับ)</span></label>
+          <input class="form-control" id="setName" type="text" maxlength="40">
         </div>
-      </div>
 
-      <div class="notice d-none" id="errBox" role="alert"></div>
-
-      <div class="notice info d-none" id="dupBox">
-        <div id="dupText"></div>
-        <div class="form-check">
-          <input class="form-check-input" type="checkbox" id="skipDup" checked>
-          <label class="form-check-label" for="skipDup">ข้ามรายการที่ซ้ำ</label>
+        <div class="fmt">
+          <p>1 บรรทัด = 1 รายการ คั่น 4 ช่องด้วย <b>|</b> หรือ <b>Tab</b></p>
+          <code>อักษรจีน | พินอิน | คำอ่านไทย | ความหมายไทย</code>
+          <p class="fmt-note">คัดลอกจากตารางใน Excel หรือ Google Sheets มาวางได้เลย ระบบแยกให้เองว่าเป็นคำหรือประโยค</p>
         </div>
+
+        <label class="field-label" for="bulk">ข้อมูลที่จะเพิ่ม</label>
+        <textarea class="form-control bulk" id="bulk" wrap="off" spellcheck="false" autocapitalize="off" autocorrect="off"></textarea>
+
+        <div class="bulk-bar">
+          <p class="bulk-status" id="status" aria-live="polite">วางข้อมูลในช่องด้านบนได้เลย</p>
+          <div class="d-flex align-items-center gap-1">
+            <button type="button" class="link-btn d-none" id="clearBtn">ล้าง</button>
+            <span class="counter" id="counter">0 / 15</span>
+          </div>
+        </div>
+
+        <div class="notice d-none" id="errBox" role="alert"></div>
+
+        <div class="notice info d-none" id="dupBox">
+          <div id="dupText"></div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="skipDup" checked>
+            <label class="form-check-label" for="skipDup">ข้ามรายการที่ซ้ำ</label>
+          </div>
+        </div>
+
+        <div class="notice d-none" id="saveErr" role="alert">บันทึกไม่สำเร็จ พื้นที่เก็บข้อมูลของเบราว์เซอร์อาจเต็มหรือถูกปิดไว้</div>
+
+        <button type="submit" class="btn btn-seal w-100" id="saveBtn" disabled>บันทึก</button>
+      </form>
+    </section>
+
+    <!-- ===== 3) แต่งเนื้อเรื่อง ===== -->
+    <section id="vStory" class="d-none">
+      <button type="button" class="back" id="backFromStory"><i class="bi bi-chevron-left"></i> เลือกสิ่งที่จะเพิ่ม</button>
+
+      <div class="mb-3">
+        <h1 class="page-title">แต่งเนื้อเรื่อง</h1>
+        <p class="page-sub">เขียนเรื่องสั้นหรือบทความภาษาจีน ไว้อ่านฝึกและท่องจำ</p>
       </div>
 
-      <div class="notice d-none" id="saveErr" role="alert">บันทึกไม่สำเร็จ พื้นที่เก็บข้อมูลของเบราว์เซอร์อาจเต็มหรือถูกปิดไว้</div>
+      <form id="storyForm" class="card-box" novalidate autocomplete="off">
 
-      <button type="submit" class="btn btn-seal w-100" id="saveBtn" disabled>บันทึก</button>
-    </form>
+        <div class="field">
+          <label class="field-label" for="stTitle">ชื่อเรื่อง</label>
+          <input class="form-control" id="stTitle" type="text" maxlength="60" placeholder="เช่น วันหยุดของฉัน">
+          <div class="invalid-feedback">ตั้งชื่อเรื่องก่อน</div>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="stHanzi">เนื้อเรื่อง (ภาษาจีน)</label>
+          <textarea class="form-control in-hanzi grow" id="stHanzi" rows="6" lang="zh-CN" spellcheck="false" placeholder="วัน周末，我和朋友一起去公园。天气很好，我们…"></textarea>
+          <div class="invalid-feedback">ต้องมีอักษรจีนอย่างน้อย 1 ตัว</div>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="stPinyin">พินอินทั้งเรื่อง <span class="field-opt">(ไม่บังคับ)</span></label>
+          <textarea class="form-control grow" id="stPinyin" rows="3" spellcheck="false" placeholder="zhōumò, wǒ hé péngyou yìqǐ qù gōngyuán. tiānqì hěn hǎo, wǒmen…"></textarea>
+        </div>
+
+        <div class="field mb-0">
+          <label class="field-label" for="stMeaning">คำแปลภาษาไทย <span class="field-opt">(ไม่บังคับ)</span></label>
+          <textarea class="form-control grow" id="stMeaning" rows="3" placeholder="วันหยุดสุดสัปดาห์ ฉันไปสวนสาธารณะกับเพื่อน อากาศดีมาก พวกเรา…"></textarea>
+        </div>
+
+        <div class="notice d-none" id="stErr" role="alert">บันทึกไม่สำเร็จ พื้นที่เก็บข้อมูลของเบราว์เซอร์อาจเต็มหรือถูกปิดไว้</div>
+
+        <button type="submit" class="btn btn-seal w-100 mt-3" id="stSave">บันทึก</button>
+      </form>
+    </section>
 
   </main>
 
@@ -263,7 +371,7 @@
   <!-- ============================================================
        JavaScript
        ส่วน [ส่วนกลาง] = ระบบ navbar ใช้เหมือนกันทุกหน้า
-       ส่วน [เฉพาะหน้า] = อ่านข้อมูลที่วาง ตรวจ และบันทึกเป็นชุด
+       ส่วน [เฉพาะหน้า] = สลับหน้าเลือก/วางคำ/แต่งเนื้อเรื่อง, อ่านข้อมูลที่วาง, บันทึก
        ============================================================ -->
   <script>
     /* ---------- [ส่วนกลาง] ระบบ Bottom Navbar ---------- */
@@ -313,6 +421,21 @@
       });
 
       window.addEventListener('pageshow', e => { if (e.persisted) setActive(cur); });
+    })();
+
+
+    /* ---------- [เฉพาะหน้า] สลับ 3 หน้าจอ: เลือก / วางคำ / แต่งเนื้อเรื่อง ---------- */
+    (function () {
+      const $ = id => document.getElementById(id);
+      const VIEWS = ['vChoose', 'vWord', 'vStory'];
+      function show(id) {
+        VIEWS.forEach(v => $(v).classList.toggle('d-none', v !== id));
+        window.scrollTo(0, 0);
+      }
+      $('goWord').addEventListener('click', () => show('vWord'));
+      $('goStory').addEventListener('click', () => show('vStory'));
+      $('backFromWord').addEventListener('click', () => show('vChoose'));
+      $('backFromStory').addEventListener('click', () => show('vChoose'));
     })();
 
 
@@ -482,6 +605,73 @@
       });
 
       refresh();
+    })();
+
+
+    /* ---------- [เฉพาะหน้า] แต่งเนื้อเรื่อง แล้วบันทึกเป็น 1 เรื่อง ---------- */
+    (function () {
+      const KEY_STORIES = 'pjee_stories';   // เรื่อง/บทความทั้งหมด (แยกจากคลังคำ)
+
+      const readArr = k => {
+        try { const v = JSON.parse(localStorage.getItem(k)); return Array.isArray(v) ? v : []; }
+        catch (e) { return []; }
+      };
+      const writeArr = (k, list) => {
+        try { localStorage.setItem(k, JSON.stringify(list)); return true; }
+        catch (e) { return false; }
+      };
+      const $ = id => document.getElementById(id);
+      const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const cjk = /[\u4e00-\u9fff]/;
+
+      const form     = $('storyForm');
+      const stTitle  = $('stTitle');
+      const stHanzi  = $('stHanzi');
+      const stPinyin = $('stPinyin');
+      const stMeaning = $('stMeaning');
+      const stSave   = $('stSave');
+
+      // ช่องพิมพ์ขยายความสูงตามข้อความ
+      const grow = el => { el.style.height = 'auto'; el.style.height = el.scrollHeight + 2 + 'px'; };
+      [stHanzi, stPinyin, stMeaning].forEach(el => el.addEventListener('input', () => { el.classList.remove('is-invalid'); grow(el); }));
+      stTitle.addEventListener('input', () => stTitle.classList.remove('is-invalid'));
+
+      form.addEventListener('submit', e => {
+        e.preventDefault();
+        const data = {
+          title: stTitle.value.trim(),
+          hanzi: stHanzi.value.trim(),
+          pinyin: stPinyin.value.trim(),
+          meaning: stMeaning.value.trim()
+        };
+
+        let ok = true, first = null;
+        const check = (el, cond) => {
+          el.classList.toggle('is-invalid', !cond);
+          if (!cond) { ok = false; if (!first) first = el; }
+        };
+        check(stTitle, !!data.title);
+        check(stHanzi, cjk.test(data.hanzi));
+        if (!ok) { first.focus(); return; }
+
+        const stories = readArr(KEY_STORIES);
+        const story = {
+          id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+          ...data,
+          createdAt: new Date().toISOString()
+        };
+        if (!writeArr(KEY_STORIES, stories.concat(story))) {
+          $('stErr').classList.remove('d-none');
+          return;
+        }
+        $('stErr').classList.add('d-none');
+
+        // สำเร็จ -> ไปหน้าบทเรียน
+        stSave.disabled = true;
+        stSave.classList.add('done');
+        stSave.innerHTML = '<i class="bi bi-check-lg"></i> บันทึกแล้ว';
+        setTimeout(() => { location.href = 'lessons.html'; }, reduce ? 0 : 700);
+      });
     })();
   </script>
 </body>
