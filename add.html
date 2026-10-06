@@ -345,6 +345,11 @@
           <textarea class="form-control grow" id="stPinyin" rows="3" spellcheck="false" placeholder="zhōumò, wǒ hé péngyou yìqǐ qù gōngyuán. tiānqì hěn hǎo, wǒmen…"></textarea>
         </div>
 
+        <div class="field">
+          <label class="field-label" for="stThai">คำอ่านไทย <span class="field-opt">(ไม่บังคับ)</span></label>
+          <textarea class="form-control grow" id="stThai" rows="3" placeholder="โจว มั่ว, หว่อ เหอ เผิง โหย่ว อี้ ฉี่ ชวี่ กง เหวียน. เทียน ชี่ เหิน ห่าว, หว่อ เมิน…"></textarea>
+        </div>
+
         <div class="field mb-0">
           <label class="field-label" for="stMeaning">คำแปลภาษาไทย <span class="field-opt">(ไม่บังคับ)</span></label>
           <textarea class="form-control grow" id="stMeaning" rows="3" placeholder="วันหยุดสุดสัปดาห์ ฉันไปสวนสาธารณะกับเพื่อน อากาศดีมาก พวกเรา…"></textarea>
@@ -628,12 +633,13 @@
       const stTitle  = $('stTitle');
       const stHanzi  = $('stHanzi');
       const stPinyin = $('stPinyin');
+      const stThai   = $('stThai');
       const stMeaning = $('stMeaning');
       const stSave   = $('stSave');
 
       // ช่องพิมพ์ขยายความสูงตามข้อความ
       const grow = el => { el.style.height = 'auto'; el.style.height = el.scrollHeight + 2 + 'px'; };
-      [stHanzi, stPinyin, stMeaning].forEach(el => el.addEventListener('input', () => { el.classList.remove('is-invalid'); grow(el); }));
+      [stHanzi, stPinyin, stThai, stMeaning].forEach(el => el.addEventListener('input', () => { el.classList.remove('is-invalid'); grow(el); }));
       stTitle.addEventListener('input', () => stTitle.classList.remove('is-invalid'));
 
       form.addEventListener('submit', e => {
@@ -642,6 +648,7 @@
           title: stTitle.value.trim(),
           hanzi: stHanzi.value.trim(),
           pinyin: stPinyin.value.trim(),
+          thaiReading: stThai.value.trim(),
           meaning: stMeaning.value.trim()
         };
 
