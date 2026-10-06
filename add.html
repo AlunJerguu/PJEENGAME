@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>PJEENGame - บทเรียน</title>
+  <title>PJEENGame - เพิ่ม</title>
 
   <!-- Bootstrap 5 + Bootstrap Icons + ฟอนต์ -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -14,7 +14,7 @@
 
   <!-- ============================================================
        CSS ของหน้านี้
-       ส่วน [ส่วนกลาง] ใช้เหมือนกันทุกหน้า (เหมือน index.html / add.html)
+       ส่วน [ส่วนกลาง] ใช้เหมือนกันทุกหน้า (เหมือน index.html)
        ส่วน [เฉพาะหน้า] เปลี่ยนตามแต่ละหน้า
        ============================================================ -->
   <style>
@@ -39,6 +39,7 @@
     @keyframes pageIn { from { opacity: 0; } to { opacity: 1; } }
     .app-wrap { max-width: 720px; }
     .hanzi { font-family: 'Noto Serif SC', serif; }
+    .min-w-0 { min-width: 0; }
 
     /* ---------- [ส่วนกลาง] Header + โลโก้ ---------- */
     .topbar {
@@ -128,125 +129,97 @@
     .dock-item.active .ripple { background: rgba(255, 255, 255, .3); }
     @keyframes ripple { to { transform: scale(1); opacity: 0; } }
 
-    /* ---------- [เฉพาะหน้า] หน้าบทเรียน (แสดงเป็นชุด / เรื่อง) ---------- */
-    .page-title { font-size: 1.4rem; font-weight: 700; margin: 0; word-break: break-word; }
+    /* ---------- [เฉพาะหน้า] หน้าเพิ่ม ---------- */
+    .page-title { font-size: 1.4rem; font-weight: 700; margin: 0; }
     .page-sub   { color: var(--muted); margin: 0; }
-    .min-w-0 { min-width: 0; }
-    .btn-ghost {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: #fff; color: var(--ink); text-decoration: none;
-      border: 1px solid var(--line); border-radius: 12px;
-      padding: .45rem .9rem; font-weight: 500;
-      transition: background .2s, transform .12s;
-    }
-    .btn-ghost:hover { background: #F6F9F7; color: var(--ink); }
-    .btn-ghost:active { transform: scale(.97); }
-    .back { display: inline-flex; align-items: center; gap: 4px; color: var(--muted); text-decoration: none; padding: 2px 0; }
-    .back:hover { color: var(--ink); }
 
-    /* ช่องกรอก / ค้นหา / สวิตช์ */
-    .search { position: relative; }
-    .search i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
-    .search .form-control { padding-left: 2.5rem; }
+    /* ตราแดง (ไอคอนตัวเลือก) */
+    .seal {
+      flex: none; width: 52px; height: 52px; border-radius: 8px;
+      background: var(--seal); color: #fff;
+      display: grid; place-items: center;
+      font-size: 30px; line-height: 1;
+      transform: rotate(-3deg);
+      box-shadow: inset 0 0 0 3px rgba(255,255,255,.35);
+    }
+
+    /* หน้าแรก: เลือกว่าจะเพิ่มอะไร */
+    .choice-list { display: flex; flex-direction: column; gap: 10px; }
+    .choicecard {
+      display: flex; align-items: center; gap: 14px; width: 100%; text-align: left;
+      color: var(--ink); transition: border-color .2s, transform .12s;
+    }
+    .choicecard:hover { border-color: var(--jade); }
+    .choicecard:active { transform: scale(.99); }
+    .choicecard:focus-visible { outline: 2px solid var(--jade); outline-offset: 2px; }
+    .choice-title { font-size: 1.15rem; font-weight: 700; margin: 0; }
+    .choice-desc  { color: var(--muted); font-size: .9rem; margin: 0; }
+    .choicecard .chev { flex: none; margin-left: auto; color: var(--muted); }
+
+    /* ปุ่มย้อนกลับไปหน้าเลือก */
+    .back {
+      display: inline-flex; align-items: center; gap: 4px; margin-bottom: 10px;
+      color: var(--muted); background: none; border: 0; padding: 2px 0;
+    }
+    .back:hover { color: var(--ink); }
+    .back:focus-visible { outline: 2px solid var(--jade); outline-offset: 2px; border-radius: 6px; }
+
+    /* ฟอร์มทั่วไป (ใช้ทั้งฟอร์มวางคำและฟอร์มแต่งเนื้อเรื่อง) */
+    .field { margin-bottom: 14px; }
+    .field-label { font-weight: 500; margin-bottom: 4px; display: block; }
+    .field-opt   { color: var(--muted); font-weight: 400; font-size: .85rem; }
     .form-control {
       border: 1px solid var(--line); border-radius: 12px;
       padding: .6rem .8rem; background: #fff; color: var(--ink);
     }
     .form-control:focus { border-color: var(--jade); box-shadow: 0 0 0 3px rgba(47, 125, 109, .2); background: #fff; color: var(--ink); }
     .form-control::placeholder { color: #A9B7B2; }
-    textarea.form-control { resize: none; overflow: hidden; }
     .form-control.is-invalid { border-color: var(--seal); background-image: none; padding-right: .8rem; }
     .form-control.is-invalid:focus { box-shadow: 0 0 0 3px rgba(200, 55, 45, .18); }
     .invalid-feedback { color: var(--seal); font-size: .85rem; }
-    .in-hanzi { font-family: 'Noto Serif SC', 'Noto Sans Thai', serif; font-size: 1.3rem; }
-    .field { margin-bottom: 14px; }
-    .field-label { font-weight: 500; margin-bottom: 4px; display: block; }
-    .field-opt   { color: var(--muted); font-weight: 400; font-size: .85rem; }
+    .in-hanzi { font-family: 'Noto Serif SC', 'Noto Sans Thai', serif; }
+    textarea.grow { resize: none; overflow: hidden; }
 
-    .seg { display: flex; background: #E3EAE6; border-radius: 12px; padding: 4px; }
-    .seg label {
-      flex: 1; text-align: center; padding: .45rem; border-radius: 9px;
-      color: var(--muted); cursor: pointer; margin: 0;
-      transition: background .2s, color .2s, box-shadow .2s;
-    }
-    .seg .btn-check:checked + label { background: #fff; color: var(--ink); font-weight: 700; box-shadow: 0 1px 3px rgba(29, 43, 42, .15); }
-    .seg .btn-check:focus-visible + label { outline: 2px solid var(--jade); outline-offset: 1px; }
-
-    .list { display: flex; flex-direction: column; gap: 10px; }
-
-    /* การ์ดชุด / การ์ดเรื่อง (หน้ารวม) */
-    .setcard { display: block; color: inherit; text-decoration: none; transition: border-color .2s, transform .12s; }
-    .setcard:hover { border-color: var(--jade); color: inherit; }
-    .setcard:active { transform: scale(.99); }
-    .setcard:focus-visible { outline: 2px solid var(--jade); outline-offset: 2px; }
-    .set-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-    .set-name { font-size: 1.15rem; font-weight: 700; word-break: break-word; }
-    .set-top i { color: var(--muted); flex: none; }
-    .set-meta { display: flex; flex-wrap: wrap; gap: 0 12px; font-size: .9rem; margin-top: 2px; }
-    .set-count { font-weight: 500; }
-    .set-parts { color: var(--muted); }
-    .strip { display: flex; gap: 6px; margin-top: 10px; overflow: hidden; }
-    .strip-chip {
-      flex: none; max-width: 7em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-      font-family: 'Noto Serif SC', serif; font-size: 1rem;
-      background: var(--paper); border-radius: 8px; padding: 2px 10px;
-    }
-    .strip-more { flex: none; align-self: center; color: var(--muted); font-size: .85rem; }
-    .set-date { color: var(--muted); font-size: .8rem; margin: 8px 0 0; }
-
-    /* ตัวอย่างเนื้อเรื่องในการ์ดรวม */
-    .story-excerpt {
-      color: var(--muted); font-size: .9rem; line-height: 1.5; margin: 8px 0 0;
-      overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    /* คำอธิบายรูปแบบข้อมูล (ฟอร์มวางคำ) */
+    .fmt { background: var(--paper); border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; }
+    .fmt p { margin: 0; font-size: .9rem; }
+    .fmt-note { color: var(--muted); }
+    .fmt code {
+      display: block; margin: 8px 0; padding: 6px 10px;
+      background: #fff; border: 1px solid var(--line); border-radius: 8px;
+      color: var(--ink); font-size: .85rem; white-space: pre-wrap; word-break: break-word;
     }
 
-    /* หน้าอ่านเนื้อเรื่อง */
-    .story-hanzi {
-      font-family: 'Noto Serif SC', serif; font-size: 1.5rem; line-height: 1.9;
-      white-space: pre-wrap; word-break: break-word; margin: 0;
+    /* ช่องวางข้อมูล (ฟอร์มวางคำ) */
+    .bulk {
+      min-height: 240px; resize: vertical;
+      line-height: 1.7; white-space: pre; overflow: auto;
     }
-    .pre { white-space: pre-wrap; }
-
-    /* การ์ดคำ/ประโยค */
-    .item-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-    .item-hanzi { font-family: 'Noto Serif SC', serif; font-size: 2.2rem; font-weight: 700; line-height: 1.3; margin: 0; word-break: break-word; }
-    .item.is-sentence .item-hanzi { font-size: 1.5rem; }
-    .item-badge {
-      flex: none; font-size: .75rem; font-weight: 500;
-      border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; color: var(--jade);
+    .bulk-bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: 8px 0 14px; min-height: 30px; }
+    .bulk-status { color: var(--muted); font-size: .9rem; margin: 0; }
+    .counter {
+      flex: none; font-size: .85rem; font-weight: 700;
+      border: 1px solid var(--line); border-radius: 999px; padding: 2px 12px; color: var(--jade); background: #fff;
     }
-    .item-pinyin  { color: var(--jade); font-size: 1.05rem; margin: 0; word-break: break-word; }
-    .item-thai    { color: var(--muted); margin: 0; word-break: break-word; }
-    .item-meaning { font-weight: 500; margin: 4px 0 0; word-break: break-word; }
-    .item-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--line); }
-    .item-cat  { color: var(--muted); font-size: .85rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .item-actions { display: flex; gap: 2px; flex: none; }
-    .icon-btn {
-      width: 38px; height: 38px; border: 0; border-radius: 10px;
-      background: transparent; color: var(--muted); font-size: 1.1rem;
-      display: grid; place-items: center; flex: none;
-      transition: background .2s, color .2s, transform .12s;
-    }
-    .icon-btn:hover { background: var(--paper); color: var(--ink); }
-    .icon-btn.danger:hover, .icon-btn[data-act="del"]:hover { color: var(--seal); }
-    .icon-btn:active { transform: scale(.9); }
-    .icon-btn:focus-visible { outline: 2px solid var(--jade); outline-offset: 1px; }
+    .counter.over { color: var(--seal); border-color: var(--seal); }
+    .link-btn { background: none; border: 0; padding: 4px 6px; color: var(--muted); text-decoration: underline; font-size: .9rem; border-radius: 6px; }
+    .link-btn:hover { color: var(--ink); }
+    .link-btn:focus-visible { outline: 2px solid var(--jade); outline-offset: 1px; }
 
-    /* หน้าว่าง */
-    .empty-box { text-align: center; padding: 28px 16px; border-style: dashed; }
-    .empty-box i { font-size: 1.8rem; color: var(--jade); }
-    .empty-title { font-weight: 700; margin: 6px 0 2px; }
-    .empty-sub { color: var(--muted); margin: 0 0 14px; }
-
-    /* หน้าต่างแก้ไข / ยืนยัน */
-    .modal-content { border: 1px solid var(--line); border-radius: 16px; }
-    .modal-header { border-bottom: 0; }
-    .modal-footer { border-top: 0; }
-    .modal-title { font-weight: 700; font-size: 1.15rem; }
+    /* กล่องแจ้งเตือน */
     .notice {
-      background: #FBECEA; border: 1px solid #EFC3BE; border-radius: 12px;
-      padding: 10px 14px; margin-bottom: 14px; font-size: .9rem;
+      border-radius: 12px; padding: 10px 14px; margin-bottom: 14px; font-size: .9rem;
+      background: #FBECEA; border: 1px solid #EFC3BE;
     }
+    .notice.info { background: #E8F2EF; border-color: #BFDCD5; }
+    .notice ul { margin: 0; padding-left: 1.1rem; }
+    .notice .form-check { margin: 8px 0 0; }
+    .form-check-input:checked { background-color: var(--jade); border-color: var(--jade); }
+    .form-check-input:focus { border-color: var(--jade); box-shadow: 0 0 0 3px rgba(47, 125, 109, .2); }
+
+    .btn-seal.done { background: var(--jade); }
+    .btn-seal:disabled { opacity: .45; }
+    .btn-seal.done:disabled { opacity: 1; }
 
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
@@ -266,228 +239,129 @@
     </div>
   </header>
 
-  <!-- ================= [เฉพาะหน้า] เนื้อหาหน้าบทเรียน ================= -->
+  <!-- ================= [เฉพาะหน้า] เนื้อหาหน้าเพิ่ม ================= -->
   <main class="container app-wrap py-3">
 
-    <!-- หัวหน้า: มุมมองรวม (มีแท็บ ชุดคำศัพท์ / เรื่องที่แต่ง) -->
-    <div id="ovHead" class="mb-3">
-      <div class="d-flex justify-content-between align-items-start gap-2">
-        <div>
-          <h1 class="page-title">บทเรียน</h1>
-          <p class="page-sub" id="ovSub"></p>
-        </div>
-        <a class="btn-ghost flex-shrink-0" href="add.html"><i class="bi bi-plus-lg"></i> เพิ่ม</a>
+    <!-- ===== 1) เลือกว่าจะเพิ่มอะไร ===== -->
+    <section id="vChoose">
+      <div class="mb-3">
+        <h1 class="page-title">เพิ่มเนื้อหา</h1>
+        <p class="page-sub">เลือกสิ่งที่จะเพิ่มเข้าบทเรียน</p>
       </div>
-      <div class="seg mt-3" role="radiogroup" aria-label="ประเภทเนื้อหา">
-        <input class="btn-check" type="radio" name="toptab" id="tabWords" value="words" checked>
-        <label for="tabWords">ชุดคำศัพท์</label>
-        <input class="btn-check" type="radio" name="toptab" id="tabStories" value="stories">
-        <label for="tabStories">เรื่องที่แต่ง</label>
-      </div>
-    </div>
-
-    <!-- หัวหน้า: มุมมองภายในชุดคำศัพท์ -->
-    <div id="dtHead" class="d-none mb-3">
-      <a class="back" href="#"><i class="bi bi-chevron-left"></i> ชุดทั้งหมด</a>
-      <div class="d-flex justify-content-between align-items-start gap-2 mt-1">
-        <div class="min-w-0">
-          <h1 class="page-title" id="dtTitle"></h1>
-          <p class="page-sub" id="dtSub"></p>
-        </div>
-        <div class="d-flex gap-1 flex-shrink-0">
-          <button type="button" class="icon-btn" id="renameBtn" aria-label="เปลี่ยนชื่อชุด"><i class="bi bi-pencil"></i></button>
-          <button type="button" class="icon-btn danger" id="delSetBtn" aria-label="ลบทั้งชุด"><i class="bi bi-trash3"></i></button>
-        </div>
-      </div>
-    </div>
-
-    <!-- หัวหน้า: มุมมองอ่านเนื้อเรื่อง -->
-    <div id="stHead" class="d-none mb-3">
-      <a class="back" href="#tab=stories"><i class="bi bi-chevron-left"></i> เรื่องทั้งหมด</a>
-      <div class="d-flex justify-content-between align-items-start gap-2 mt-1">
-        <div class="min-w-0">
-          <h1 class="page-title" id="stTitle"></h1>
-          <p class="page-sub" id="stSub"></p>
-        </div>
-        <div class="d-flex gap-1 flex-shrink-0">
-          <button type="button" class="icon-btn" id="editStoryBtn" aria-label="แก้ไขเรื่อง"><i class="bi bi-pencil"></i></button>
-          <button type="button" class="icon-btn danger" id="delStoryBtn" aria-label="ลบเรื่อง"><i class="bi bi-trash3"></i></button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ค้นหา + ตัวกรอง -->
-    <section id="controls" class="d-none mb-3">
-      <div class="search">
-        <i class="bi bi-search"></i>
-        <input type="search" class="form-control" id="q" aria-label="ค้นหา">
-      </div>
-      <div class="seg mt-2 d-none" id="typeSeg" role="radiogroup" aria-label="กรองตามประเภท">
-        <input class="btn-check" type="radio" name="ftype" id="fAll" value="all" checked>
-        <label for="fAll">ทั้งหมด</label>
-        <input class="btn-check" type="radio" name="ftype" id="fWord" value="word">
-        <label for="fWord">คำศัพท์</label>
-        <input class="btn-check" type="radio" name="ftype" id="fSentence" value="sentence">
-        <label for="fSentence">ประโยค</label>
+      <div class="choice-list">
+        <button type="button" class="card-box choicecard" id="goWord">
+          <div class="seal hanzi" aria-hidden="true">词</div>
+          <div class="min-w-0">
+            <p class="choice-title">คำศัพท์ / ประโยค</p>
+            <p class="choice-desc">วางคำหรือประโยคทีละชุด (สูงสุด 15 รายการ) ไว้เล่นเกมและทบทวน</p>
+          </div>
+          <i class="bi bi-chevron-right chev" aria-hidden="true"></i>
+        </button>
+        <button type="button" class="card-box choicecard" id="goStory">
+          <div class="seal hanzi" aria-hidden="true">文</div>
+          <div class="min-w-0">
+            <p class="choice-title">แต่งเนื้อเรื่อง</p>
+            <p class="choice-desc">เขียนเรื่องสั้นหรือบทความภาษาจีน พร้อมคำแปล ไว้อ่านฝึกและท่องจำ</p>
+          </div>
+          <i class="bi bi-chevron-right chev" aria-hidden="true"></i>
+        </button>
       </div>
     </section>
 
-    <!-- รายการ (การ์ดชุด / การ์ดเรื่อง / การ์ดคำ / เนื้อหาเรื่อง) -->
-    <section class="list" id="list" aria-live="polite"></section>
+    <!-- ===== 2) เพิ่มคำศัพท์ / ประโยค (วางทีละชุด) ===== -->
+    <section id="vWord" class="d-none">
+      <button type="button" class="back" id="backFromWord"><i class="bi bi-chevron-left"></i> เลือกสิ่งที่จะเพิ่ม</button>
 
-    <!-- ยังไม่มีข้อมูลเลย (ข้อความเปลี่ยนตามแท็บที่เลือก) -->
-    <section class="card-box empty-box d-none" id="emptyAll">
-      <i class="bi bi-journal-plus" id="emptyIcon"></i>
-      <p class="empty-title" id="emptyTitle">ยังไม่มีบทเรียน</p>
-      <p class="empty-sub" id="emptySub">วางคำศัพท์ชุดแรกในหน้าเพิ่ม แล้วชุดจะมาอยู่ที่นี่</p>
-      <a class="btn btn-seal" href="add.html" id="emptyLink">เพิ่มชุดแรก</a>
+      <div class="mb-3">
+        <h1 class="page-title">เพิ่มคำหรือประโยค</h1>
+        <p class="page-sub">วางได้ครั้งละไม่เกิน 15 รายการ บันทึกเป็น 1 ชุดในหน้าบทเรียน</p>
+      </div>
+
+      <form id="addForm" class="card-box" novalidate autocomplete="off">
+
+        <div class="field">
+          <label class="field-label" for="setName">ชื่อชุด <span class="field-opt">(ไม่บังคับ)</span></label>
+          <input class="form-control" id="setName" type="text" maxlength="40">
+        </div>
+
+        <div class="fmt">
+          <p>1 บรรทัด = 1 รายการ คั่น 4 ช่องด้วย <b>|</b> หรือ <b>Tab</b></p>
+          <code>อักษรจีน | พินอิน | คำอ่านไทย | ความหมายไทย</code>
+          <p class="fmt-note">คัดลอกจากตารางใน Excel หรือ Google Sheets มาวางได้เลย ระบบแยกให้เองว่าเป็นคำหรือประโยค</p>
+        </div>
+
+        <label class="field-label" for="bulk">ข้อมูลที่จะเพิ่ม</label>
+        <textarea class="form-control bulk" id="bulk" wrap="off" spellcheck="false" autocapitalize="off" autocorrect="off"></textarea>
+
+        <div class="bulk-bar">
+          <p class="bulk-status" id="status" aria-live="polite">วางข้อมูลในช่องด้านบนได้เลย</p>
+          <div class="d-flex align-items-center gap-1">
+            <button type="button" class="link-btn d-none" id="clearBtn">ล้าง</button>
+            <span class="counter" id="counter">0 / 15</span>
+          </div>
+        </div>
+
+        <div class="notice d-none" id="errBox" role="alert"></div>
+
+        <div class="notice info d-none" id="dupBox">
+          <div id="dupText"></div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="skipDup" checked>
+            <label class="form-check-label" for="skipDup">ข้ามรายการที่ซ้ำ</label>
+          </div>
+        </div>
+
+        <div class="notice d-none" id="saveErr" role="alert">บันทึกไม่สำเร็จ พื้นที่เก็บข้อมูลของเบราว์เซอร์อาจเต็มหรือถูกปิดไว้</div>
+
+        <button type="submit" class="btn btn-seal w-100" id="saveBtn" disabled>บันทึก</button>
+      </form>
     </section>
 
-    <!-- ค้นหา/กรองแล้วไม่เจอ -->
-    <section class="card-box empty-box d-none" id="emptyNone">
-      <i class="bi bi-search"></i>
-      <p class="empty-title">ไม่พบรายการที่ตรงกัน</p>
-      <p class="empty-sub mb-0">ลองเปลี่ยนคำค้นหา หรือเลือกตัวกรองอื่น</p>
+    <!-- ===== 3) แต่งเนื้อเรื่อง ===== -->
+    <section id="vStory" class="d-none">
+      <button type="button" class="back" id="backFromStory"><i class="bi bi-chevron-left"></i> เลือกสิ่งที่จะเพิ่ม</button>
+
+      <div class="mb-3">
+        <h1 class="page-title">แต่งเนื้อเรื่อง</h1>
+        <p class="page-sub">เขียนเรื่องสั้นหรือบทความภาษาจีน ไว้อ่านฝึกและท่องจำ</p>
+      </div>
+
+      <form id="storyForm" class="card-box" novalidate autocomplete="off">
+
+        <div class="field">
+          <label class="field-label" for="stTitle">ชื่อเรื่อง</label>
+          <input class="form-control" id="stTitle" type="text" maxlength="60" placeholder="เช่น วันหยุดของฉัน">
+          <div class="invalid-feedback">ตั้งชื่อเรื่องก่อน</div>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="stHanzi">เนื้อเรื่อง (ภาษาจีน)</label>
+          <textarea class="form-control in-hanzi grow" id="stHanzi" rows="6" lang="zh-CN" spellcheck="false" placeholder="วัน周末，我和朋友一起去公园。天气很好，我们…"></textarea>
+          <div class="invalid-feedback">ต้องมีอักษรจีนอย่างน้อย 1 ตัว</div>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="stPinyin">พินอินทั้งเรื่อง <span class="field-opt">(ไม่บังคับ)</span></label>
+          <textarea class="form-control grow" id="stPinyin" rows="3" spellcheck="false" placeholder="zhōumò, wǒ hé péngyou yìqǐ qù gōngyuán. tiānqì hěn hǎo, wǒmen…"></textarea>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="stThai">คำอ่านไทย <span class="field-opt">(ไม่บังคับ)</span></label>
+          <textarea class="form-control grow" id="stThai" rows="3" placeholder="โจว มั่ว, หว่อ เหอ เผิง โหย่ว อี้ ฉี่ ชวี่ กง เหวียน. เทียน ชี่ เหิน ห่าว, หว่อ เมิน…"></textarea>
+        </div>
+
+        <div class="field mb-0">
+          <label class="field-label" for="stMeaning">คำแปลภาษาไทย <span class="field-opt">(ไม่บังคับ)</span></label>
+          <textarea class="form-control grow" id="stMeaning" rows="3" placeholder="วันหยุดสุดสัปดาห์ ฉันไปสวนสาธารณะกับเพื่อน อากาศดีมาก พวกเรา…"></textarea>
+        </div>
+
+        <div class="notice d-none" id="stErr" role="alert">บันทึกไม่สำเร็จ พื้นที่เก็บข้อมูลของเบราว์เซอร์อาจเต็มหรือถูกปิดไว้</div>
+
+        <button type="submit" class="btn btn-seal w-100 mt-3" id="stSave">บันทึก</button>
+      </form>
     </section>
 
   </main>
-
-  <!-- ================= [เฉพาะหน้า] หน้าต่างแก้ไขรายการคำศัพท์ ================= -->
-  <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editTitle" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2 class="modal-title" id="editTitle">แก้ไขรายการ</h2>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ปิด"></button>
-        </div>
-        <div class="modal-body">
-          <form id="editForm" novalidate autocomplete="off">
-            <div class="field">
-              <span class="field-label" id="eTypeLabel">ประเภท</span>
-              <div class="seg" role="radiogroup" aria-labelledby="eTypeLabel">
-                <input class="btn-check" type="radio" name="etype" id="eTypeWord" value="word">
-                <label for="eTypeWord">คำศัพท์</label>
-                <input class="btn-check" type="radio" name="etype" id="eTypeSentence" value="sentence">
-                <label for="eTypeSentence">ประโยค</label>
-              </div>
-            </div>
-            <div class="field">
-              <label class="field-label" for="eHanzi">อักษรจีน</label>
-              <textarea class="form-control in-hanzi" id="eHanzi" rows="1" lang="zh-CN" spellcheck="false"></textarea>
-              <div class="invalid-feedback">ต้องมีอักษรจีนอย่างน้อย 1 ตัว</div>
-            </div>
-            <div class="field">
-              <label class="field-label" for="ePinyin">พินอิน</label>
-              <textarea class="form-control" id="ePinyin" rows="1" spellcheck="false"></textarea>
-              <div class="invalid-feedback">กรอกพินอินก่อน</div>
-            </div>
-            <div class="field">
-              <label class="field-label" for="eThai">คำอ่านไทย</label>
-              <textarea class="form-control" id="eThai" rows="1"></textarea>
-              <div class="invalid-feedback">กรอกคำอ่านไทยก่อน</div>
-            </div>
-            <div class="field mb-0">
-              <label class="field-label" for="eMeaning">ความหมายไทย</label>
-              <textarea class="form-control" id="eMeaning" rows="1"></textarea>
-              <div class="invalid-feedback">กรอกความหมายไทยก่อน</div>
-            </div>
-            <div class="notice d-none mt-3 mb-0" id="editErr" role="alert">บันทึกไม่สำเร็จ พื้นที่เก็บข้อมูลของเบราว์เซอร์อาจเต็มหรือถูกปิดไว้</div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn-ghost" data-bs-dismiss="modal">ยกเลิก</button>
-          <button type="submit" class="btn btn-seal" form="editForm">บันทึกการแก้ไข</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ================= [เฉพาะหน้า] หน้าต่างเปลี่ยนชื่อชุด ================= -->
-  <div class="modal fade" id="renameModal" tabindex="-1" aria-labelledby="renameTitle" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2 class="modal-title" id="renameTitle">เปลี่ยนชื่อชุด</h2>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ปิด"></button>
-        </div>
-        <div class="modal-body pt-0">
-          <form id="renameForm" novalidate autocomplete="off">
-            <label class="field-label" for="rnInput">ชื่อชุด</label>
-            <input class="form-control" id="rnInput" type="text" maxlength="40">
-            <div class="invalid-feedback">กรอกชื่อชุดก่อน</div>
-            <div class="notice d-none mt-3 mb-0" id="rnErr" role="alert">บันทึกไม่สำเร็จ พื้นที่เก็บข้อมูลของเบราว์เซอร์อาจเต็มหรือถูกปิดไว้</div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn-ghost" data-bs-dismiss="modal">ยกเลิก</button>
-          <button type="submit" class="btn btn-seal" form="renameForm">บันทึก</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ================= [เฉพาะหน้า] หน้าต่างแก้ไขเนื้อเรื่อง ================= -->
-  <div class="modal fade" id="storyEditModal" tabindex="-1" aria-labelledby="seTitle2" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2 class="modal-title" id="seTitle2">แก้ไขเรื่อง</h2>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ปิด"></button>
-        </div>
-        <div class="modal-body">
-          <form id="storyEditForm" novalidate autocomplete="off">
-            <div class="field">
-              <label class="field-label" for="seTitle">ชื่อเรื่อง</label>
-              <input class="form-control" id="seTitle" type="text" maxlength="60">
-              <div class="invalid-feedback">ตั้งชื่อเรื่องก่อน</div>
-            </div>
-            <div class="field">
-              <label class="field-label" for="seHanzi">เนื้อเรื่อง (ภาษาจีน)</label>
-              <textarea class="form-control in-hanzi" id="seHanzi" rows="5" lang="zh-CN" spellcheck="false"></textarea>
-              <div class="invalid-feedback">ต้องมีอักษรจีนอย่างน้อย 1 ตัว</div>
-            </div>
-            <div class="field">
-              <label class="field-label" for="sePinyin">พินอินทั้งเรื่อง <span class="field-opt">(ไม่บังคับ)</span></label>
-              <textarea class="form-control" id="sePinyin" rows="2" spellcheck="false"></textarea>
-            </div>
-            <div class="field">
-              <label class="field-label" for="seThai">คำอ่านไทย <span class="field-opt">(ไม่บังคับ)</span></label>
-              <textarea class="form-control" id="seThai" rows="2"></textarea>
-            </div>
-            <div class="field mb-0">
-              <label class="field-label" for="seMeaning">คำแปลภาษาไทย <span class="field-opt">(ไม่บังคับ)</span></label>
-              <textarea class="form-control" id="seMeaning" rows="2"></textarea>
-            </div>
-            <div class="notice d-none mt-3 mb-0" id="seErr" role="alert">บันทึกไม่สำเร็จ พื้นที่เก็บข้อมูลของเบราว์เซอร์อาจเต็มหรือถูกปิดไว้</div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn-ghost" data-bs-dismiss="modal">ยกเลิก</button>
-          <button type="submit" class="btn btn-seal" form="storyEditForm">บันทึกการแก้ไข</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ================= [เฉพาะหน้า] หน้าต่างยืนยันลบ (ใช้ร่วม: ลบรายการ/ลบทั้งชุด/ลบเรื่อง) ================= -->
-  <div class="modal fade" id="cfModal" tabindex="-1" aria-labelledby="cfTitle" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2 class="modal-title" id="cfTitle"></h2>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ปิด"></button>
-        </div>
-        <div class="modal-body pt-0">
-          <p class="mb-0" id="cfMsg"></p>
-          <div class="notice d-none mt-3 mb-0" id="cfErr" role="alert">ลบไม่สำเร็จ ลองใหม่อีกครั้ง</div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn-ghost" data-bs-dismiss="modal">ยกเลิก</button>
-          <button type="button" class="btn btn-seal" id="cfOk">ลบ</button>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <!-- ================= [ส่วนกลาง] Bottom Navbar ================= -->
   <nav class="dock" aria-label="เมนูหลัก">
@@ -499,13 +373,10 @@
     <a class="dock-item" href="add.html"><i class="bi bi-plus-circle"></i><span class="lbl">เพิ่ม</span></a>
   </nav>
 
-  <!-- Bootstrap JS (ใช้กับหน้าต่างแก้ไข/ลบ) -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
   <!-- ============================================================
        JavaScript
        ส่วน [ส่วนกลาง] = ระบบ navbar ใช้เหมือนกันทุกหน้า
-       ส่วน [เฉพาะหน้า] = แสดงเป็นชุด/เรื่อง เปิดดูรายละเอียด ค้นหา แก้ไข ลบ
+       ส่วน [เฉพาะหน้า] = สลับหน้าเลือก/วางคำ/แต่งเนื้อเรื่อง, อ่านข้อมูลที่วาง, บันทึก
        ============================================================ -->
   <script>
     /* ---------- [ส่วนกลาง] ระบบ Bottom Navbar ---------- */
@@ -558,530 +429,256 @@
     })();
 
 
-    /* ---------- [เฉพาะหน้า] บทเรียน: ชุดคำศัพท์ + เรื่องที่แต่ง ---------- */
+    /* ---------- [เฉพาะหน้า] สลับ 3 หน้าจอ: เลือก / วางคำ / แต่งเนื้อเรื่อง ---------- */
     (function () {
-      const KEY_ITEMS   = 'pjee_items';
-      const KEY_SETS    = 'pjee_sets';
-      const KEY_STORIES = 'pjee_stories';
-      const NONE = '_none';               // กลุ่มพิเศษ: รายการเก่าที่ไม่มีชุด
+      const $ = id => document.getElementById(id);
+      const VIEWS = ['vChoose', 'vWord', 'vStory'];
+      function show(id) {
+        VIEWS.forEach(v => $(v).classList.toggle('d-none', v !== id));
+        window.scrollTo(0, 0);
+      }
+      $('goWord').addEventListener('click', () => show('vWord'));
+      $('goStory').addEventListener('click', () => show('vStory'));
+      $('backFromWord').addEventListener('click', () => show('vChoose'));
+      $('backFromStory').addEventListener('click', () => show('vChoose'));
+    })();
 
-      const read = k => {
+
+    /* ---------- [เฉพาะหน้า] วางหลายรายการ แล้วบันทึกเป็น 1 ชุด ---------- */
+    (function () {
+      const KEY_ITEMS = 'pjee_items';   // รายการคำ/ประโยคทั้งหมด
+      const KEY_SETS  = 'pjee_sets';    // รายชื่อชุด (แต่ละชุดมีได้ไม่เกิน 15 รายการ)
+      const MAX = 15;
+
+      const readArr = k => {
         try { const v = JSON.parse(localStorage.getItem(k)); return Array.isArray(v) ? v : []; }
         catch (e) { return []; }
       };
-      const write = (k, list) => {
+      const $ = id => document.getElementById(id);
+      const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      const form    = $('addForm');
+      const bulk    = $('bulk');
+      const setName = $('setName');
+      const saveBtn = $('saveBtn');
+      const skipDup = $('skipDup');
+
+      const EXAMPLE = '你好 | nǐ hǎo | หนี่ ห่าว | สวัสดี\n你吃饭了吗？ | nǐ chī fàn le ma? | หนี่ ชือ ฟ่าน เลอ มา | คุณกินข้าวหรือยัง';
+      bulk.placeholder = EXAMPLE;
+      setName.placeholder = 'ชุดที่ ' + (readArr(KEY_SETS).length + 1);
+
+      const cjk = /[\u4e00-\u9fff]/;
+      // เดาว่าเป็นประโยคถ้ามีเครื่องหมายวรรคตอน หรือยาวตั้งแต่ 5 ตัวอักษรจีนขึ้นไป
+      const guessType = h => (/[。？！，、；：?!,;]/.test(h) || (h.match(/[\u4e00-\u9fff]/g) || []).length >= 5) ? 'sentence' : 'word';
+
+      /* ----- อ่านข้อความที่วางมา ทีละบรรทัด ----- */
+      function parse(text) {
+        const rows = [], errors = [];
+        let total = 0, headerSkipped = false;
+
+        text.split(/\r?\n/).forEach((raw, idx) => {
+          const line = idx + 1;
+          if (!raw.trim()) return;                              // บรรทัดว่าง
+          if (/^[\s|:\-]+$/.test(raw)) return;                  // เส้นคั่นของตาราง |---|---|
+          if (total === 0 && !headerSkipped && !cjk.test(raw)) { headerSkipped = true; return; }  // หัวตาราง
+
+          total++;
+          let cells;
+          if (raw.includes('\t')) {
+            cells = raw.split('\t');
+          } else if (raw.includes('|')) {
+            cells = raw.split('|');
+            if (cells.length && !cells[0].trim()) cells.shift();                    // | ที่ขึ้นต้นบรรทัด
+            if (cells.length && !cells[cells.length - 1].trim()) cells.pop();       // | ที่ท้ายบรรทัด
+          } else {
+            errors.push({ line, msg: 'ไม่พบตัวคั่น ( | หรือ Tab )' });
+            return;
+          }
+          cells = cells.map(c => c.trim());
+          if (cells.length === 5 && /^\d+[.)]?$/.test(cells[0])) cells.shift();      // คอลัมน์ลำดับเลขข้างหน้า
+
+          if (cells.length !== 4) { errors.push({ line, msg: `มี ${cells.length} ช่อง (ต้องมี 4 ช่อง)` }); return; }
+          const [hanzi, pinyin, thaiReading, meaning] = cells;
+          if (!cjk.test(hanzi)) { errors.push({ line, msg: 'ช่องแรกไม่มีอักษรจีน' }); return; }
+          if (!pinyin || !thaiReading || !meaning) { errors.push({ line, msg: 'มีช่องที่ว่างอยู่' }); return; }
+
+          rows.push({ line, hanzi, pinyin, thaiReading, meaning, type: guessType(hanzi) });
+        });
+        return { rows, errors, total };
+      }
+
+      /* ----- ตรวจผลทั้งหมด (ใช้ทั้งตอนแสดงผลและตอนกดบันทึก) ----- */
+      function analyze() {
+        const p = parse(bulk.value);
+        const existing = new Set(readArr(KEY_ITEMS).map(i => String(i.hanzi || '').trim()));
+        const seen = new Set();
+        const dups = [], fresh = [];
+        p.rows.forEach(r => {
+          if (existing.has(r.hanzi) || seen.has(r.hanzi)) dups.push(r); else fresh.push(r);
+          seen.add(r.hanzi);
+        });
+        const toSave = skipDup.checked ? fresh : p.rows;
+        const over = p.total > MAX;
+        const ok = p.total >= 1 && !over && p.errors.length === 0 && toSave.length > 0;
+        return { ...p, dups, toSave, over, ok };
+      }
+
+      /* ----- แสดงสถานะบนหน้าจอ ----- */
+      function refresh() {
+        const a = analyze();
+
+        $('counter').textContent = `${a.total} / ${MAX}`;
+        $('counter').classList.toggle('over', a.over);
+        $('clearBtn').classList.toggle('d-none', !bulk.value.trim());
+        $('saveErr').classList.add('d-none');
+
+        $('status').textContent = a.total === 0
+          ? 'วางข้อมูลในช่องด้านบนได้เลย'
+          : `อ่านได้ ${a.rows.length} รายการ` + (a.errors.length ? ` มีปัญหา ${a.errors.length} บรรทัด` : '');
+
+        // ข้อผิดพลาด
+        const msgs = [];
+        if (a.over) msgs.push(`เกิน ${MAX} รายการ (พบ ${a.total}) ต้องลดออก ${a.total - MAX} รายการ`);
+        a.errors.slice(0, 5).forEach(er => msgs.push(`บรรทัด ${er.line}: ${er.msg}`));
+        if (a.errors.length > 5) msgs.push(`และอีก ${a.errors.length - 5} บรรทัด`);
+        const errBox = $('errBox');
+        errBox.replaceChildren();
+        if (msgs.length) {
+          const ul = document.createElement('ul');
+          msgs.forEach(m => { const li = document.createElement('li'); li.textContent = m; ul.appendChild(li); });
+          errBox.appendChild(ul);
+        }
+        errBox.classList.toggle('d-none', msgs.length === 0);
+
+        // รายการซ้ำ
+        const dupBox = $('dupBox');
+        if (a.dups.length) {
+          const names = a.dups.slice(0, 5).map(r => r.hanzi).join(', ') + (a.dups.length > 5 ? ' ...' : '');
+          $('dupText').textContent = `ซ้ำกับที่มีอยู่หรือซ้ำกันเอง ${a.dups.length} รายการ: ${names}`;
+        }
+        dupBox.classList.toggle('d-none', a.dups.length === 0);
+
+        // ปุ่มบันทึก
+        saveBtn.disabled = !a.ok;
+        if (a.total > 0 && a.errors.length === 0 && !a.over && a.toSave.length === 0) saveBtn.textContent = 'ไม่มีรายการใหม่ให้บันทึก';
+        else saveBtn.textContent = a.ok ? `บันทึก ${a.toSave.length} รายการ` : 'บันทึก';
+      }
+
+      bulk.addEventListener('input', refresh);
+      skipDup.addEventListener('change', refresh);
+      $('clearBtn').addEventListener('click', () => { bulk.value = ''; refresh(); bulk.focus(); });
+
+      /* ----- บันทึก ----- */
+      form.addEventListener('submit', e => {
+        e.preventDefault();
+        const a = analyze();                       // ตรวจใหม่อีกครั้ง เผื่อข้อมูลเปลี่ยนจากแท็บอื่น
+        if (!a.ok) { refresh(); return; }
+
+        const items = readArr(KEY_ITEMS);
+        const sets  = readArr(KEY_SETS);
+        const now   = new Date().toISOString();
+        const base  = Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+
+        const set = { id: 's' + base, name: setName.value.trim() || ('ชุดที่ ' + (sets.length + 1)), createdAt: now };
+        const newItems = a.toSave.map((r, i) => ({
+          id: base + i.toString(36),
+          type: r.type,
+          hanzi: r.hanzi,
+          pinyin: r.pinyin,
+          thaiReading: r.thaiReading,
+          meaning: r.meaning,
+          setId: set.id,
+          createdAt: now
+        }));
+
+        const prevItems = localStorage.getItem(KEY_ITEMS);
+        try {
+          localStorage.setItem(KEY_ITEMS, JSON.stringify(items.concat(newItems)));
+          localStorage.setItem(KEY_SETS, JSON.stringify(sets.concat(set)));
+        } catch (err) {
+          // บันทึกไม่ครบ ให้ย้อนกลับ ไม่ให้เหลือรายการที่ไม่มีชุด
+          try { if (prevItems === null) localStorage.removeItem(KEY_ITEMS); else localStorage.setItem(KEY_ITEMS, prevItems); } catch (e2) {}
+          $('saveErr').classList.remove('d-none');
+          return;
+        }
+
+        // สำเร็จ -> ไปหน้าบทเรียน
+        saveBtn.disabled = true;
+        saveBtn.classList.add('done');
+        saveBtn.innerHTML = `<i class="bi bi-check-lg"></i> บันทึกแล้ว ${newItems.length} รายการ`;
+        setTimeout(() => { location.href = 'lessons.html'; }, reduce ? 0 : 700);
+      });
+
+      refresh();
+    })();
+
+
+    /* ---------- [เฉพาะหน้า] แต่งเนื้อเรื่อง แล้วบันทึกเป็น 1 เรื่อง ---------- */
+    (function () {
+      const KEY_STORIES = 'pjee_stories';   // เรื่อง/บทความทั้งหมด (แยกจากคลังคำ)
+
+      const readArr = k => {
+        try { const v = JSON.parse(localStorage.getItem(k)); return Array.isArray(v) ? v : []; }
+        catch (e) { return []; }
+      };
+      const writeArr = (k, list) => {
         try { localStorage.setItem(k, JSON.stringify(list)); return true; }
         catch (e) { return false; }
       };
       const $ = id => document.getElementById(id);
-      const el = (tag, cls, text) => {
-        const e = document.createElement(tag);
-        if (cls) e.className = cls;
-        if (text != null) e.textContent = text;
-        return e;
-      };
-      // ตัดวรรณยุกต์พินอินออก เพื่อให้พิมพ์ "ni hao" แล้วหาเจอ "nǐ hǎo"
-      const norm = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-      const canSpeak = 'speechSynthesis' in window;
-      const cjkCount = s => (String(s || '').match(/[\u4e00-\u9fff]/g) || []).length;
+      const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const cjk = /[\u4e00-\u9fff]/;
 
-      function speak(text) {
-        if (!canSpeak) return;
-        speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(text);
-        u.lang = 'zh-CN';
-        u.rate = 0.85;
-        speechSynthesis.speak(u);
-      }
+      const form     = $('storyForm');
+      const stTitle  = $('stTitle');
+      const stHanzi  = $('stHanzi');
+      const stPinyin = $('stPinyin');
+      const stThai   = $('stThai');
+      const stMeaning = $('stMeaning');
+      const stSave   = $('stSave');
 
-      const state = { q: '', type: 'all' };
-      let lastKey = null;      // ใช้รู้ว่าเปลี่ยนมุมมองหรือยัง (เพื่อล้างคำค้นหา)
-      let curGroup = null;     // ชุดคำศัพท์ที่กำลังเปิดดูอยู่ (ถ้ามี)
-      let curStory = null;     // เรื่องที่กำลังเปิดอ่านอยู่ (ถ้ามี)
+      // ช่องพิมพ์ขยายความสูงตามข้อความ
+      const grow = el => { el.style.height = 'auto'; el.style.height = el.scrollHeight + 2 + 'px'; };
+      [stHanzi, stPinyin, stThai, stMeaning].forEach(el => el.addEventListener('input', () => { el.classList.remove('is-invalid'); grow(el); }));
+      stTitle.addEventListener('input', () => stTitle.classList.remove('is-invalid'));
 
-      /* ----- จัดรายการคำศัพท์เข้าชุด ----- */
-      function buildGroups() {
-        const sets = read(KEY_SETS), items = read(KEY_ITEMS);
-        const map = new Map();
-        sets.forEach(s => {
-          if (s && s.id) map.set(s.id, { id: s.id, name: String(s.name || 'ชุดไม่มีชื่อ'), createdAt: s.createdAt, real: true, items: [] });
-        });
-        const orphan = { id: NONE, name: 'รายการเดิม (ยังไม่อยู่ในชุด)', createdAt: null, real: false, items: [] };
-        items.forEach(it => { (map.get(it.setId) || orphan).items.push(it); });
-        const groups = [...map.values()].filter(g => g.items.length);   // ชุดเก่าก่อน ชุดใหม่ต่อท้าย
-        if (orphan.items.length) groups.push(orphan);
-        return { groups, total: items.length };
-      }
-
-      /* ----- อ่านรายการเรื่องที่แต่ง ----- */
-      function buildStories() {
-        const stories = read(KEY_STORIES).filter(s => s && s.id && String(s.hanzi || '').trim());
-        return { stories, total: stories.length };
-      }
-
-      const matchQ = (it, extra) => {
-        const q = norm(state.q.trim());
-        if (!q) return true;
-        return norm([it.hanzi, it.pinyin, it.thaiReading, it.meaning, extra].join(' ')).includes(q);
-      };
-      const matchStoryQ = s => {
-        const q = norm(state.q.trim());
-        if (!q) return true;
-        return norm([s.title, s.hanzi, s.pinyin, s.thaiReading, s.meaning].join(' ')).includes(q);
-      };
-
-      /* ----- สร้างการ์ด ----- */
-      function fmtDate(iso) {
-        const d = new Date(iso);
-        return isNaN(d) ? '' : d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
-      }
-
-      function setCard(g) {
-        const a = el('a', 'card-box setcard');
-        a.href = '#set=' + encodeURIComponent(g.id);
-
-        const top = el('div', 'set-top');
-        const chev = el('i', 'bi bi-chevron-right'); chev.setAttribute('aria-hidden', 'true');
-        top.append(el('span', 'set-name', g.name), chev);
-
-        const words = g.items.filter(i => i.type !== 'sentence').length;
-        const sents = g.items.length - words;
-        const meta = el('div', 'set-meta');
-        meta.append(el('span', 'set-count', g.items.length + ' รายการ'));
-        const parts = [];
-        if (words) parts.push('คำศัพท์ ' + words);
-        if (sents) parts.push('ประโยค ' + sents);
-        if (parts.length) meta.append(el('span', 'set-parts', parts.join('  ')));
-
-        const strip = el('div', 'strip');
-        strip.setAttribute('aria-hidden', 'true');
-        g.items.slice(0, 6).forEach(i => {
-          const h = String(i.hanzi || '');
-          const c = el('span', 'strip-chip', h.length > 6 ? h.slice(0, 6) + '…' : h);
-          c.lang = 'zh-CN';
-          strip.append(c);
-        });
-        if (g.items.length > 6) strip.append(el('span', 'strip-more', '+' + (g.items.length - 6)));
-
-        a.append(top, meta, strip);
-        const date = g.createdAt ? fmtDate(g.createdAt) : '';
-        if (date) a.append(el('p', 'set-date', 'เพิ่มเมื่อ ' + date));
-        return a;
-      }
-
-      function storyCard(s) {
-        const a = el('a', 'card-box setcard');
-        a.href = '#story=' + encodeURIComponent(s.id);
-
-        const top = el('div', 'set-top');
-        const chev = el('i', 'bi bi-chevron-right'); chev.setAttribute('aria-hidden', 'true');
-        top.append(el('span', 'set-name', s.title || 'เรื่องไม่มีชื่อ'), chev);
-
-        const meta = el('div', 'set-meta');
-        meta.append(el('span', 'set-count', cjkCount(s.hanzi) + ' ตัวอักษร'));
-
-        const excerpt = el('p', 'story-excerpt hanzi', s.hanzi || '');
-        excerpt.lang = 'zh-CN';
-
-        a.append(top, meta, excerpt);
-        const date = s.createdAt ? fmtDate(s.createdAt) : '';
-        if (date) a.append(el('p', 'set-date', 'เพิ่มเมื่อ ' + date));
-        return a;
-      }
-
-      function itemCard(it, setLabel) {
-        const isSentence = it.type === 'sentence';
-        const art = el('article', 'card-box item' + (isSentence ? ' is-sentence' : ''));
-        art.dataset.id = it.id;
-
-        const top = el('div', 'item-top');
-        const h = el('p', 'item-hanzi', it.hanzi);
-        h.lang = 'zh-CN';
-        top.append(h, el('span', 'item-badge', isSentence ? 'ประโยค' : 'คำศัพท์'));
-
-        const foot = el('div', 'item-foot');
-        const actions = el('div', 'item-actions');
-        const mk = (act, icon, label) => {
-          const b = el('button', 'icon-btn');
-          b.type = 'button'; b.dataset.act = act; b.setAttribute('aria-label', label);
-          b.innerHTML = `<i class="bi ${icon}"></i>`;
-          return b;
-        };
-        if (canSpeak) actions.append(mk('speak', 'bi-volume-up', 'ฟังเสียง'));
-        actions.append(mk('edit', 'bi-pencil', 'แก้ไข'), mk('del', 'bi-trash3', 'ลบ'));
-        foot.append(el('span', 'item-cat', setLabel ? 'ชุด: ' + setLabel : ''), actions);
-
-        art.append(top, el('p', 'item-pinyin', it.pinyin), el('p', 'item-thai', it.thaiReading), el('p', 'item-meaning', it.meaning), foot);
-        return art;
-      }
-
-      /* ----- เนื้อหาหน้าอ่านเรื่อง (คืนเป็นหลายการ์ด) ----- */
-      function storyDetailNodes(s) {
-        const out = [];
-
-        const card = el('article', 'card-box');
-        const h = el('p', 'story-hanzi hanzi', s.hanzi || ''); h.lang = 'zh-CN';
-        card.append(h);
-        if (canSpeak) {
-          const speakBtn = el('button', 'btn-ghost w-100 justify-content-center mt-3');
-          speakBtn.type = 'button';
-          speakBtn.innerHTML = '<i class="bi bi-volume-up"></i> ฟังเสียงทั้งเรื่อง';
-          speakBtn.addEventListener('click', () => speak(s.hanzi));
-          card.append(speakBtn);
-        }
-        out.push(card);
-
-        const addBlock = (label, text, cls) => {
-          if (!text) return;
-          const box = el('div', 'card-box');
-          box.append(el('p', 'field-label', label), el('p', cls + ' pre', text));
-          out.push(box);
-        };
-        addBlock('พินอิน', s.pinyin, 'item-pinyin');
-        addBlock('คำอ่านไทย', s.thaiReading, 'item-thai');
-        addBlock('คำแปลภาษาไทย', s.meaning, 'item-meaning');
-
-        return out;
-      }
-
-      /* ----- อ่าน hash เพื่อรู้ว่าตอนนี้อยู่มุมมองไหน ----- */
-      function parseRoute() {
-        const h = location.hash;
-        let m;
-        if ((m = /^#set=(.+)$/.exec(h)))   return { mode: 'set',   id: decodeURIComponent(m[1]) };
-        if ((m = /^#story=(.+)$/.exec(h))) return { mode: 'story', id: decodeURIComponent(m[1]) };
-        if (/^#tab=stories$/.test(h))      return { mode: 'overview', tab: 'stories' };
-        return { mode: 'overview', tab: 'words' };
-      }
-
-      /* ----- แสดงผลตามมุมมองปัจจุบัน ----- */
-      function render() {
-        const { groups, total } = buildGroups();
-        const { stories, total: totalStories } = buildStories();
-        let route = parseRoute();
-
-        let setMatch = null, storyMatch = null;
-        if (route.mode === 'set') {
-          setMatch = groups.find(g => g.id === route.id) || null;
-          if (!setMatch) { history.replaceState(null, '', location.pathname + location.search); route = { mode: 'overview', tab: 'words' }; }
-        } else if (route.mode === 'story') {
-          storyMatch = stories.find(s => s.id === route.id) || null;
-          if (!storyMatch) { history.replaceState(null, '', location.pathname + location.search + '#tab=stories'); route = { mode: 'overview', tab: 'stories' }; }
-        }
-        curGroup = setMatch;
-        curStory = storyMatch;
-
-        // เปลี่ยนมุมมอง -> ล้างคำค้นหา/ตัวกรอง และเลื่อนขึ้นบนสุด
-        const viewKey = route.mode === 'set' ? 'set:' + setMatch.id
-          : route.mode === 'story' ? 'story:' + storyMatch.id
-          : 'ov:' + route.tab;
-        if (viewKey !== lastKey) {
-          state.q = ''; state.type = 'all';
-          $('q').value = '';
-          $('fAll').checked = true;
-          if (lastKey !== null) window.scrollTo(0, 0);
-          lastKey = viewKey;
-        }
-
-        $('ovHead').classList.toggle('d-none', route.mode !== 'overview');
-        $('dtHead').classList.toggle('d-none', route.mode !== 'set');
-        $('stHead').classList.toggle('d-none', route.mode !== 'story');
-        if (route.mode === 'overview') {
-          $('tabWords').checked = route.tab === 'words';
-          $('tabStories').checked = route.tab === 'stories';
-        }
-
-        const showControls = route.mode === 'set'
-          || (route.mode === 'overview' && (route.tab === 'words' ? total > 0 : totalStories > 0));
-        $('controls').classList.toggle('d-none', !showControls);
-        $('typeSeg').classList.toggle('d-none', route.mode !== 'set');
-        $('q').placeholder = route.mode === 'set' ? 'ค้นหาในชุดนี้'
-          : (route.mode === 'overview' && route.tab === 'stories') ? 'ค้นหาเรื่อง ชื่อเรื่องหรือเนื้อหา'
-          : 'ค้นหาทุกชุด อักษรจีน พินอิน คำอ่าน หรือความหมาย';
-
-        const q = state.q.trim();
-        let nodes = [];
-
-        if (route.mode === 'set') {
-          // ----- มุมมองในชุดคำศัพท์ -----
-          $('dtTitle').textContent = setMatch.name;
-          $('renameBtn').classList.toggle('d-none', !setMatch.real);
-          const list = setMatch.items.filter(i => (state.type === 'all' || i.type === state.type) && matchQ(i));
-          nodes = list.map(i => itemCard(i, null));
-          const filtered = q || state.type !== 'all';
-          $('dtSub').textContent = filtered ? `แสดง ${list.length} จาก ${setMatch.items.length} รายการ` : `${setMatch.items.length} รายการ`;
-        } else if (route.mode === 'story') {
-          // ----- มุมมองอ่านเรื่อง -----
-          $('stTitle').textContent = storyMatch.title || 'เรื่องไม่มีชื่อ';
-          $('stSub').textContent = `${cjkCount(storyMatch.hanzi)} ตัวอักษร`;
-          nodes = storyDetailNodes(storyMatch);
-        } else if (route.tab === 'stories') {
-          // ----- มุมมองรวม: เรื่องที่แต่ง -----
-          const list = stories.filter(matchStoryQ);
-          nodes = list.map(storyCard);
-          $('ovSub').textContent = totalStories === 0 ? '' : (q ? `พบ ${list.length} จาก ${totalStories} เรื่อง` : `${totalStories} เรื่อง`);
-        } else if (q) {
-          // ----- มุมมองรวม: ค้นหาข้ามทุกชุดคำศัพท์ -----
-          groups.forEach(g => g.items.forEach(i => { if (matchQ(i, g.name)) nodes.push(itemCard(i, g.name)); }));
-          $('ovSub').textContent = `พบ ${nodes.length} รายการ`;
-        } else {
-          // ----- มุมมองรวม: ชุดคำศัพท์ -----
-          nodes = groups.map(setCard);
-          $('ovSub').textContent = total === 0 ? '' : `${groups.length} ชุด รวม ${total} รายการ`;
-        }
-
-        $('list').replaceChildren(...nodes);
-
-        // หน้าว่าง: ข้อความเปลี่ยนตามบริบท (หน้าอ่านเรื่องไม่มีสถานะว่าง เพราะมีเนื้อหาเสมอ)
-        if (route.mode === 'story') {
-          $('emptyAll').classList.add('d-none');
-          $('emptyNone').classList.add('d-none');
-        } else if (route.mode === 'overview' && route.tab === 'stories') {
-          $('emptyIcon').className = 'bi bi-pencil-square';
-          $('emptyTitle').textContent = 'ยังไม่มีเรื่องที่แต่ง';
-          $('emptySub').textContent = 'แต่งเรื่องแรกในหน้าเพิ่ม แล้วเรื่องจะมาอยู่ที่นี่';
-          $('emptyLink').textContent = 'แต่งเรื่องแรก';
-          $('emptyAll').classList.toggle('d-none', totalStories !== 0);
-          $('emptyNone').classList.toggle('d-none', totalStories === 0 || nodes.length !== 0);
-        } else {
-          $('emptyIcon').className = 'bi bi-journal-plus';
-          $('emptyTitle').textContent = 'ยังไม่มีบทเรียน';
-          $('emptySub').textContent = 'วางคำศัพท์ชุดแรกในหน้าเพิ่ม แล้วชุดจะมาอยู่ที่นี่';
-          $('emptyLink').textContent = 'เพิ่มชุดแรก';
-          const totalForEmpty = route.mode === 'set' ? setMatch.items.length : total;
-          $('emptyAll').classList.toggle('d-none', totalForEmpty !== 0);
-          $('emptyNone').classList.toggle('d-none', totalForEmpty === 0 || nodes.length !== 0);
-        }
-      }
-
-      /* ----- ค้นหา / กรอง / สลับแท็บ ----- */
-      $('q').addEventListener('input', e => { state.q = e.target.value; render(); });
-      document.querySelectorAll('input[name="ftype"]').forEach(r =>
-        r.addEventListener('change', () => { state.type = r.value; render(); }));
-      document.querySelectorAll('input[name="toptab"]').forEach(r =>
-        r.addEventListener('change', () => { location.hash = r.value === 'stories' ? 'tab=stories' : ''; }));
-
-      /* ----- หน้าต่างยืนยันลบ (ใช้ร่วมกัน) ----- */
-      const cfModal = new bootstrap.Modal($('cfModal'));
-      let onConfirm = null;
-      function askConfirm(title, before, name, after, isHanzi, fn) {
-        $('cfTitle').textContent = title;
-        const nameEl = el('span', isHanzi ? 'hanzi' : '', name);
-        nameEl.style.fontWeight = '700';
-        $('cfMsg').replaceChildren(document.createTextNode(before), nameEl, document.createTextNode(after));
-        $('cfErr').classList.add('d-none');
-        onConfirm = fn;
-        cfModal.show();
-      }
-      $('cfOk').addEventListener('click', () => {
-        if (!onConfirm) return;
-        if (onConfirm() === false) { $('cfErr').classList.remove('d-none'); return; }
-        cfModal.hide();
-        render();
-      });
-
-      /* ----- ปุ่มในการ์ดคำ ----- */
-      $('list').addEventListener('click', e => {
-        const btn = e.target.closest('[data-act]');
-        if (!btn) return;
-        const id = btn.closest('[data-id]').dataset.id;
-        const it = read(KEY_ITEMS).find(x => x.id === id);
-        if (!it) return;
-        if (btn.dataset.act === 'speak') speak(it.hanzi);
-        if (btn.dataset.act === 'edit') openEdit(it);
-        if (btn.dataset.act === 'del') {
-          askConfirm('ลบรายการนี้?', '“', it.hanzi, '” จะถูกลบออกจากชุด และกู้คืนไม่ได้', true, () => deleteItem(id));
-        }
-      });
-
-      function deleteItem(id) {
-        const list = read(KEY_ITEMS);
-        const it = list.find(x => x.id === id);
-        const rest = list.filter(x => x.id !== id);
-        if (!write(KEY_ITEMS, rest)) return false;
-        // ถ้าลบรายการสุดท้ายของชุด ให้ลบชุดนั้นทิ้งด้วย
-        if (it && it.setId && !rest.some(x => x.setId === it.setId)) {
-          write(KEY_SETS, read(KEY_SETS).filter(s => s.id !== it.setId));
-        }
-        return true;
-      }
-
-      /* ----- แก้ไขรายการคำศัพท์ ----- */
-      const editModal = new bootstrap.Modal($('editModal'));
-      const editForm = $('editForm');
-      const eHanzi = $('eHanzi'), ePinyin = $('ePinyin'), eThai = $('eThai'), eMean = $('eMeaning');
-      const order = [eHanzi, ePinyin, eThai, eMean];
-      let editingId = null;
-      const grow = x => { x.style.height = 'auto'; x.style.height = x.scrollHeight + 2 + 'px'; };
-
-      function openEdit(it) {
-        editingId = it.id;
-        editForm.querySelector(`input[name="etype"][value="${it.type === 'sentence' ? 'sentence' : 'word'}"]`).checked = true;
-        eHanzi.value = it.hanzi || '';
-        ePinyin.value = it.pinyin || '';
-        eThai.value = it.thaiReading || '';
-        eMean.value = it.meaning || '';
-        order.forEach(x => x.classList.remove('is-invalid'));
-        $('editErr').classList.add('d-none');
-        editModal.show();
-      }
-      // ปรับความสูงช่องพิมพ์หลังหน้าต่างเปิดเสร็จ (ตอนซ่อนอยู่วัดความสูงไม่ได้)
-      $('editModal').addEventListener('shown.bs.modal', () => order.forEach(grow));
-
-      order.forEach(x => {
-        x.addEventListener('input', () => { x.classList.remove('is-invalid'); grow(x); });
-        // Enter = ไปช่องถัดไป (ช่องสุดท้ายจะบันทึก) / ไม่ทำงานตอนกำลังเลือกคำจาก IME
-        x.addEventListener('keydown', e => {
-          if (e.key !== 'Enter' || e.shiftKey || e.isComposing || e.keyCode === 229) return;
-          e.preventDefault();
-          const i = order.indexOf(x);
-          if (i < order.length - 1) order[i + 1].focus(); else editForm.requestSubmit();
-        });
-      });
-
-      editForm.addEventListener('submit', e => {
+      form.addEventListener('submit', e => {
         e.preventDefault();
         const data = {
-          type: editForm.querySelector('input[name="etype"]:checked').value,
-          hanzi: eHanzi.value.trim(),
-          pinyin: ePinyin.value.trim(),
-          thaiReading: eThai.value.trim(),
-          meaning: eMean.value.trim()
+          title: stTitle.value.trim(),
+          hanzi: stHanzi.value.trim(),
+          pinyin: stPinyin.value.trim(),
+          thaiReading: stThai.value.trim(),
+          meaning: stMeaning.value.trim()
         };
+
         let ok = true, first = null;
-        const check = (x, cond) => {
-          x.classList.toggle('is-invalid', !cond);
-          if (!cond) { ok = false; if (!first) first = x; }
+        const check = (el, cond) => {
+          el.classList.toggle('is-invalid', !cond);
+          if (!cond) { ok = false; if (!first) first = el; }
         };
-        check(eHanzi, /[\u4e00-\u9fff]/.test(data.hanzi));
-        check(ePinyin, !!data.pinyin);
-        check(eThai, !!data.thaiReading);
-        check(eMean, !!data.meaning);
+        check(stTitle, !!data.title);
+        check(stHanzi, cjk.test(data.hanzi));
         if (!ok) { first.focus(); return; }
 
-        const list = read(KEY_ITEMS);                 // อ่านใหม่ เผื่อมีการแก้จากแท็บอื่น
-        const idx = list.findIndex(x => x.id === editingId);
-        if (idx >= 0) {
-          list[idx] = { ...list[idx], ...data, updatedAt: new Date().toISOString() };
-          if (!write(KEY_ITEMS, list)) { $('editErr').classList.remove('d-none'); return; }
-        }
-        editModal.hide();
-        render();
-      });
-
-      /* ----- เปลี่ยนชื่อชุด ----- */
-      const renameModal = new bootstrap.Modal($('renameModal'));
-      const rnInput = $('rnInput');
-      let renamingId = null;
-
-      $('renameBtn').addEventListener('click', () => {
-        if (!curGroup || !curGroup.real) return;
-        renamingId = curGroup.id;
-        rnInput.value = curGroup.name;
-        rnInput.classList.remove('is-invalid');
-        $('rnErr').classList.add('d-none');
-        renameModal.show();
-      });
-      $('renameModal').addEventListener('shown.bs.modal', () => { rnInput.focus(); rnInput.select(); });
-      rnInput.addEventListener('input', () => rnInput.classList.remove('is-invalid'));
-      $('renameForm').addEventListener('submit', e => {
-        e.preventDefault();
-        const name = rnInput.value.trim();
-        if (!name) { rnInput.classList.add('is-invalid'); rnInput.focus(); return; }
-        const sets = read(KEY_SETS);
-        const idx = sets.findIndex(s => s.id === renamingId);
-        if (idx >= 0) {
-          sets[idx] = { ...sets[idx], name };
-          if (!write(KEY_SETS, sets)) { $('rnErr').classList.remove('d-none'); return; }
-        }
-        renameModal.hide();
-        render();
-      });
-
-      /* ----- ลบทั้งชุด ----- */
-      $('delSetBtn').addEventListener('click', () => {
-        if (!curGroup) return;
-        const g = curGroup;
-        askConfirm('ลบทั้งชุด?', 'ชุด “', g.name, `” และรายการทั้ง ${g.items.length} รายการในชุดจะถูกลบ กู้คืนไม่ได้`, false, () => {
-          const items = read(KEY_ITEMS), sets = read(KEY_SETS);
-          let keep;
-          if (g.id === NONE) { const ids = new Set(sets.map(s => s.id)); keep = items.filter(i => ids.has(i.setId)); }
-          else keep = items.filter(i => i.setId !== g.id);
-          if (!write(KEY_ITEMS, keep)) return false;
-          if (g.id !== NONE) write(KEY_SETS, sets.filter(s => s.id !== g.id));
-          return true;
-        });
-      });
-
-      /* ----- แก้ไขเรื่อง ----- */
-      const storyEditModal = new bootstrap.Modal($('storyEditModal'));
-      const storyEditForm = $('storyEditForm');
-      const seTitle = $('seTitle'), seHanzi = $('seHanzi'), sePinyin = $('sePinyin'), seThai = $('seThai'), seMeaning = $('seMeaning');
-      const seOrder = [seHanzi, sePinyin, seThai, seMeaning];
-      let editingStoryId = null;
-
-      function openStoryEdit(s) {
-        editingStoryId = s.id;
-        seTitle.value = s.title || '';
-        seHanzi.value = s.hanzi || '';
-        sePinyin.value = s.pinyin || '';
-        seThai.value = s.thaiReading || '';
-        seMeaning.value = s.meaning || '';
-        seTitle.classList.remove('is-invalid');
-        seOrder.forEach(x => x.classList.remove('is-invalid'));
-        $('seErr').classList.add('d-none');
-        storyEditModal.show();
-      }
-      $('storyEditModal').addEventListener('shown.bs.modal', () => seOrder.forEach(grow));
-
-      $('editStoryBtn').addEventListener('click', () => { if (curStory) openStoryEdit(curStory); });
-      seTitle.addEventListener('input', () => seTitle.classList.remove('is-invalid'));
-      seOrder.forEach(x => x.addEventListener('input', () => { x.classList.remove('is-invalid'); grow(x); }));
-
-      storyEditForm.addEventListener('submit', e => {
-        e.preventDefault();
-        const data = {
-          title: seTitle.value.trim(),
-          hanzi: seHanzi.value.trim(),
-          pinyin: sePinyin.value.trim(),
-          thaiReading: seThai.value.trim(),
-          meaning: seMeaning.value.trim()
+        const stories = readArr(KEY_STORIES);
+        const story = {
+          id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+          ...data,
+          createdAt: new Date().toISOString()
         };
-        let ok = true, first = null;
-        const check = (x, cond) => {
-          x.classList.toggle('is-invalid', !cond);
-          if (!cond) { ok = false; if (!first) first = x; }
-        };
-        check(seTitle, !!data.title);
-        check(seHanzi, /[\u4e00-\u9fff]/.test(data.hanzi));
-        if (!ok) { first.focus(); return; }
-
-        const list = read(KEY_STORIES);
-        const idx = list.findIndex(x => x.id === editingStoryId);
-        if (idx >= 0) {
-          list[idx] = { ...list[idx], ...data, updatedAt: new Date().toISOString() };
-          if (!write(KEY_STORIES, list)) { $('seErr').classList.remove('d-none'); return; }
+        if (!writeArr(KEY_STORIES, stories.concat(story))) {
+          $('stErr').classList.remove('d-none');
+          return;
         }
-        storyEditModal.hide();
-        render();
+        $('stErr').classList.add('d-none');
+
+        // สำเร็จ -> ไปหน้าบทเรียน
+        stSave.disabled = true;
+        stSave.classList.add('done');
+        stSave.innerHTML = '<i class="bi bi-check-lg"></i> บันทึกแล้ว';
+        setTimeout(() => { location.href = 'lessons.html'; }, reduce ? 0 : 700);
       });
-
-      /* ----- ลบเรื่อง ----- */
-      $('delStoryBtn').addEventListener('click', () => {
-        if (!curStory) return;
-        const s = curStory;
-        askConfirm('ลบเรื่องนี้?', 'เรื่อง “', s.title || 'เรื่องไม่มีชื่อ', '” จะถูกลบออกจากบทเรียน และกู้คืนไม่ได้', false, () => {
-          const list = read(KEY_STORIES).filter(x => x.id !== s.id);
-          return write(KEY_STORIES, list);
-        });
-      });
-
-      /* ----- อัปเดตเมื่อเปลี่ยนมุมมอง / ข้อมูลเปลี่ยนจากที่อื่น ----- */
-      window.addEventListener('hashchange', render);
-      window.addEventListener('storage', e => { if (e.key === KEY_ITEMS || e.key === KEY_SETS || e.key === KEY_STORIES) render(); });
-      window.addEventListener('pageshow', e => { if (e.persisted) render(); });
-
-      render();
     })();
   </script>
 </body>
