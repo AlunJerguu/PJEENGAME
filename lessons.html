@@ -28,6 +28,12 @@
       --jade:  #2F7D6D;
       --seal:  #C8372D;
       --dock-h: 66px;
+      /* สีตัวหนังสือแยกตามชนิด (ชุดเดียวกับหน้าเกม) */
+      --c-hanzi:  #1D2B2A;   /* อักษรจีน   : ดำเข้ม */
+      --c-pinyin: #1F6FB5;   /* พินอิน     : น้ำเงิน */
+      --c-thai:   #B4530A;   /* คำอ่านไทย  : ส้มน้ำตาล */
+      --c-mean:   #26705F;   /* ความหมายไทย: เขียว */
+      --hl:       #FDE9A1;   /* สีไฮไลต์ตอนอ่านออกเสียง */
     }
     body {
       background: var(--paper);
@@ -203,21 +209,28 @@
     /* หน้าอ่านเนื้อเรื่อง */
     .story-hanzi {
       font-family: 'Noto Serif SC', serif; font-size: 1.5rem; line-height: 1.9;
-      white-space: pre-wrap; word-break: break-word; margin: 0;
+      white-space: pre-wrap; word-break: break-word; margin: 0; color: var(--c-hanzi);
     }
     .pre { white-space: pre-wrap; }
 
+    /* ไฮไลต์ตามจังหวะที่อ่านออกเสียง (ใช้กับ span ย่อยในอักษรจีน/พินอิน/คำอ่านไทย) */
+    .seg { border-radius: 4px; transition: background-color .15s ease, box-shadow .15s ease; }
+    .seg.seg-hl { background: var(--hl); box-shadow: 0 0 0 .12em var(--hl); }
+    .btn-ghost.playing { background: var(--jade); color: #fff; border-color: var(--jade); }
+    .btn-ghost.playing i { display: inline-block; animation: segPulse .8s ease-in-out infinite; }
+    @keyframes segPulse { 50% { transform: scale(1.15); } }
+
     /* การ์ดคำ/ประโยค */
     .item-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-    .item-hanzi { font-family: 'Noto Serif SC', serif; font-size: 2.2rem; font-weight: 700; line-height: 1.3; margin: 0; word-break: break-word; }
+    .item-hanzi { font-family: 'Noto Serif SC', serif; font-size: 2.2rem; font-weight: 700; line-height: 1.3; margin: 0; word-break: break-word; color: var(--c-hanzi); }
     .item.is-sentence .item-hanzi { font-size: 1.5rem; }
     .item-badge {
       flex: none; font-size: .75rem; font-weight: 500;
       border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; color: var(--jade);
     }
-    .item-pinyin  { color: var(--jade); font-size: 1.05rem; margin: 0; word-break: break-word; }
-    .item-thai    { color: var(--muted); margin: 0; word-break: break-word; }
-    .item-meaning { font-weight: 500; margin: 4px 0 0; word-break: break-word; }
+    .item-pinyin  { color: var(--c-pinyin); font-size: 1.05rem; margin: 0; word-break: break-word; }
+    .item-thai    { color: var(--c-thai); margin: 0; word-break: break-word; }
+    .item-meaning { color: var(--c-mean); font-weight: 500; margin: 4px 0 0; word-break: break-word; }
     .item-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--line); }
     .item-cat  { color: var(--muted); font-size: .85rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .item-actions { display: flex; gap: 2px; flex: none; }
@@ -716,30 +729,100 @@
       }
 
       /* ----- เนื้อหาหน้าอ่านเรื่อง (คืนเป็นหลายการ์ด) ----- */
+      // ตัดข้อความเป็นช่วงๆ ตามเครื่องหมายวรรคตอน (เก็บเครื่องหมายไว้ท้ายช่วงเดิม) ไว้ใช้จับคู่ไฮไลต์
+      function splitSegs(text, punctClass) {
+        const re = new RegExp(`[^${punctClass}]+[${punctClass}]*`, 'g');
+        const out = [];
+        let m;
+        while ((m = re.exec(text))) out.push({ text: m[0], start: m.index, end: m.index + m[0].length });
+        return out;
+      }
+      const splitHanziSegs  = text => splitSegs(text, '，。！？；、');
+      const splitLatinSegs  = text => splitSegs(text, ',.!?;');
+
       function storyDetailNodes(s) {
         const out = [];
+        const hanziFull = s.hanzi || '';
+        const hanziSegs  = splitHanziSegs(hanziFull);
+        const pinyinSegs = s.pinyin ? splitLatinSegs(s.pinyin) : [];
+        const thaiSegs   = s.thaiReading ? splitLatinSegs(s.thaiReading) : [];
+        // ไฮไลต์ตามกันได้ก็ต่อเมื่อจำนวนช่วงของพินอิน/คำอ่านไทย ตรงกับอักษรจีนพอดี (ขึ้นกับเครื่องหมายวรรคตอนตรงกัน)
+        const syncPinyin = pinyinSegs.length > 0 && pinyinSegs.length === hanziSegs.length;
+        const syncThai   = thaiSegs.length > 0 && thaiSegs.length === hanziSegs.length;
 
+        // การ์ดเนื้อเรื่องหลัก: อักษรจีน (แยกเป็น span ต่อช่วง) + ปุ่มฟังเสียงทั้งเรื่อง
         const card = el('article', 'card-box');
-        const h = el('p', 'story-hanzi hanzi', s.hanzi || ''); h.lang = 'zh-CN';
-        card.append(h);
+        const hanziP = el('p', 'story-hanzi hanzi');
+        hanziP.lang = 'zh-CN';
+        const hanziSpans = hanziSegs.length
+          ? hanziSegs.map(seg => { const sp = el('span', 'seg', seg.text); hanziP.append(sp); return sp; })
+          : (hanziP.textContent = hanziFull, []);
+        card.append(hanziP);
+
+        let speakBtn = null;
         if (canSpeak) {
-          const speakBtn = el('button', 'btn-ghost w-100 justify-content-center mt-3');
+          speakBtn = el('button', 'btn-ghost w-100 justify-content-center mt-3');
           speakBtn.type = 'button';
           speakBtn.innerHTML = '<i class="bi bi-volume-up"></i> ฟังเสียงทั้งเรื่อง';
-          speakBtn.addEventListener('click', () => speak(s.hanzi));
           card.append(speakBtn);
         }
         out.push(card);
 
-        const addBlock = (label, text, cls) => {
-          if (!text) return;
+        // การ์ดพินอิน / คำอ่านไทย: แยกเป็น span ต่อช่วงเมื่อไฮไลต์ตามกันได้ ไม่งั้นแสดงเป็นข้อความธรรมดา
+        let pinyinSpans = [], thaiSpans = [];
+        if (s.pinyin) {
           const box = el('div', 'card-box');
-          box.append(el('p', 'field-label', label), el('p', cls + ' pre', text));
+          box.append(el('p', 'field-label', 'พินอิน'));
+          const p = el('p', 'item-pinyin pre');
+          if (syncPinyin) pinyinSpans = pinyinSegs.map(seg => { const sp = el('span', 'seg', seg.text); p.append(sp); return sp; });
+          else p.textContent = s.pinyin;
+          box.append(p);
           out.push(box);
-        };
-        addBlock('พินอิน', s.pinyin, 'item-pinyin');
-        addBlock('คำอ่านไทย', s.thaiReading, 'item-thai');
-        addBlock('คำแปลภาษาไทย', s.meaning, 'item-meaning');
+        }
+        if (s.thaiReading) {
+          const box = el('div', 'card-box');
+          box.append(el('p', 'field-label', 'คำอ่านไทย'));
+          const p = el('p', 'item-thai pre');
+          if (syncThai) thaiSpans = thaiSegs.map(seg => { const sp = el('span', 'seg', seg.text); p.append(sp); return sp; });
+          else p.textContent = s.thaiReading;
+          box.append(p);
+          out.push(box);
+        }
+        if (s.meaning) {
+          const box = el('div', 'card-box');
+          box.append(el('p', 'field-label', 'คำแปลภาษาไทย'), el('p', 'item-meaning pre', s.meaning));
+          out.push(box);
+        }
+
+        // ปุ่มฟังเสียงทั้งเรื่อง: อ่านออกเสียงแล้วไฮไลต์อักษรจีน/พินอิน/คำอ่านไทย ตามช่วงที่อ่านถึง
+        if (speakBtn) {
+          const clearHl = () => { hanziSpans.forEach(x => x.classList.remove('seg-hl')); pinyinSpans.forEach(x => x.classList.remove('seg-hl')); thaiSpans.forEach(x => x.classList.remove('seg-hl')); };
+          speakBtn.addEventListener('click', () => {
+            speechSynthesis.cancel();
+            clearHl();
+            if (!hanziFull.trim()) return;
+            const u = new SpeechSynthesisUtterance(hanziFull);
+            u.lang = 'zh-CN';
+            u.rate = 0.85;
+            let curIdx = -1;
+            u.onboundary = ev => {
+              if (typeof ev.charIndex !== 'number' || !hanziSegs.length) return;
+              let idx = hanziSegs.findIndex(seg => ev.charIndex >= seg.start && ev.charIndex < seg.end);
+              if (idx < 0) idx = hanziSegs.length - 1;
+              if (idx === curIdx) return;
+              curIdx = idx;
+              clearHl();
+              if (hanziSpans[idx]) hanziSpans[idx].classList.add('seg-hl');
+              if (syncPinyin && pinyinSpans[idx]) pinyinSpans[idx].classList.add('seg-hl');
+              if (syncThai && thaiSpans[idx]) thaiSpans[idx].classList.add('seg-hl');
+            };
+            const stop = () => { speakBtn.classList.remove('playing'); clearHl(); };
+            u.onstart = () => speakBtn.classList.add('playing');
+            u.onend = stop;
+            u.onerror = stop;
+            speechSynthesis.speak(u);
+          });
+        }
 
         return out;
       }
@@ -756,6 +839,7 @@
 
       /* ----- แสดงผลตามมุมมองปัจจุบัน ----- */
       function render() {
+        if (canSpeak) speechSynthesis.cancel();   // เปลี่ยนมุมมองแล้วให้หยุดเสียงที่กำลังอ่านอยู่
         const { groups, total } = buildGroups();
         const { stories, total: totalStories } = buildStories();
         let route = parseRoute();
