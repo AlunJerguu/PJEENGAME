@@ -1354,11 +1354,32 @@
       let ag = null;
 
       // หาพินอินรายตัวอักษร: ใช้ได้เฉพาะตัวที่เคยถูกเพิ่มเป็น "คำศัพท์" 1 ตัวอักษรไว้ในบทเรียนแล้ว
+      // ตัดพินอินทั้งก้อนออกเป็นพยางค์ๆ (ไม่สนใจว่าเดิมเว้นวรรคระหว่างพยางค์ไว้หรือเขียนติดกัน)
+      // ใช้รูปแบบ: [พยัญชนะต้น]?[สระ+วรรณยุกต์]+[ตัวสะกด n/ng]?  ตัดอักขระอื่น (เครื่องหมายวรรคตอน ตัวเลข) ทิ้งไปก่อน
+      const PINYIN_VOWELS = 'aeiouüvAEIOUÜVāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜĀÁǍÀĒÉĚÈĪÍǏÌŌÓǑÒŪÚǓÙǕǗǙǛ';
+      function splitPinyinSyllables(text) {
+        const re = new RegExp(`(?:zh|ch|sh|[bpmfdtnlgkhjqxrzcsyw])?[${PINYIN_VOWELS}]+(?:ng|n)?`, 'gi');
+        const out = [];
+        let m;
+        while ((m = re.exec(text))) out.push(m[0]);
+        return out;
+      }
+
+      // หาพินอินรายตัวอักษร: 1) จากคำศัพท์เดี่ยว (1 ตัวอักษร) มั่นใจสุด 2) เติมส่วนที่เหลือจากคำ/ประโยคอื่นๆ
+      // โดยถอดพยางค์จากพินอินที่พิมพ์ไว้ ใช้ได้เมื่อจำนวนพยางค์ตรงกับจำนวนตัวอักษรจีนพอดี
       function charPinyinMap(all) {
         const map = {};
         all.forEach(it => {
-          const cs = [...String(it.hanzi || '')].filter(c => CJK_RE.test(c));
+          const cs = cjkChars(it.hanzi);
           if (cs.length === 1 && it.pinyin && !map[cs[0]]) map[cs[0]] = String(it.pinyin).trim();
+        });
+        all.forEach(it => {
+          if (!it.pinyin) return;
+          const cs = cjkChars(it.hanzi);
+          if (cs.length < 2) return;
+          const syls = splitPinyinSyllables(it.pinyin);
+          if (syls.length !== cs.length) return;              // จำนวนไม่ตรงกัน ข้ามไป (กันจับคู่ผิด)
+          cs.forEach((c, i) => { if (!map[c]) map[c] = syls[i]; });
         });
         return map;
       }
