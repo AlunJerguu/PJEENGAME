@@ -162,6 +162,7 @@
       box-shadow: inset 0 0 0 3px rgba(255,255,255,.35);
     }
     .seal.lg { width: 76px; height: 76px; font-size: 44px; }
+    #setGlyph { box-shadow: inset 0 0 0 3px rgba(255,255,255,.35), 0 0 0 3px var(--accent); transition: box-shadow .2s; }
 
     /* หน้าเลือกเกม */
     .gamecard {
@@ -208,21 +209,35 @@
     .empty-title { font-weight: 700; margin: 6px 0 2px; }
     .empty-sub { color: var(--muted); margin: 0 0 14px; }
 
+    /* ---------- สีเอกลักษณ์ประจำเกม ----------
+       ค่าเริ่มต้น --accent คือสีเขียวแบรนด์ (ใช้นอกเกม) พอเริ่มเล่นเกมไหน body จะได้คลาส
+       theme-<ชื่อเกม> ซึ่งเปลี่ยน --accent ให้เป็นสีประจำเกมนั้น ใช้กับคะแนน แถบเวลา แถบความคืบหน้า
+       ปุ่มฟังเสียง และเส้นขอบตอนชี้/เลือก ส่วนสีถูก/ผิด (เขียว/แดง) ยังคงเดิมทุกเกมเพื่อให้อ่านง่าย */
+    :root { --accent: var(--jade); }
+    body.theme-quiz    { --accent: #D98E04; }  /* ตอบคำถาม: เหลืองทอง */
+    body.theme-match    { --accent: #7C5CBF; }  /* จับคู่: ม่วง */
+    body.theme-arrange   { --accent: #1C86C9; }  /* เรียงประโยค: ฟ้า */
+    body.theme-flip      { --accent: #E0556F; }  /* พลิกการ์ด: ชมพูอมแดง */
+
     /* แถบด้านบนระหว่างเล่น */
     .hud { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
     .hud-step { font-weight: 700; }
     .hud-score {
-      font-size: .85rem; font-weight: 700; color: var(--jade); background: #fff;
+      font-size: .85rem; font-weight: 700; color: var(--accent); background: #fff;
       border: 1px solid var(--line); border-radius: 999px; padding: 2px 12px;
+      transition: color .2s;
     }
+    .hud-score.pop { animation: scorePop .35s ease-out; }
+    @keyframes scorePop { 35% { transform: scale(1.28); } 100% { transform: scale(1); } }
     .hud-timer {
       position: relative; display: inline-flex; align-items: center; gap: 6px;
       font-weight: 700; font-size: 1.1rem; font-variant-numeric: tabular-nums;
+      color: var(--accent); transition: color .2s;
     }
     .hud-timer.low { color: var(--seal); animation: pulse 1s ease-in-out infinite; }
     .bonus {
       position: absolute; right: -6px; top: -16px;
-      color: var(--jade); font-size: .95rem; font-weight: 700;
+      color: var(--accent); font-size: .95rem; font-weight: 700;
       opacity: 0; pointer-events: none;
     }
     .bonus.show { animation: bonusUp .9s ease-out; }
@@ -230,7 +245,11 @@
     @keyframes pulse { 50% { transform: scale(1.08); } }
 
     .pbar { height: 6px; background: #DCE5E0; border-radius: 999px; overflow: hidden; margin-bottom: 14px; }
-    .pfill { height: 100%; width: 0; background: var(--jade); border-radius: 999px; transition: width .4s cubic-bezier(.22, 1, .36, 1); }
+    .pfill { height: 100%; width: 0; background: var(--accent); border-radius: 999px; transition: width .4s cubic-bezier(.22, 1, .36, 1), background .2s; }
+
+    /* คอนเฟตติ (ขึ้นตอนจบเกม) */
+    .confetti-piece { position: absolute; width: 7px; height: 7px; border-radius: 2px; opacity: 0; animation: confettiFall .9s ease-out forwards; pointer-events: none; }
+    @keyframes confettiFall { 0% { opacity: 1; transform: translateY(-6px) rotate(0deg); } 100% { opacity: 0; transform: translateY(110px) rotate(280deg); } }
 
     .enter { animation: qIn .3s ease-out both; }
     @keyframes qIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
@@ -244,15 +263,15 @@
     .q-thai   { color: var(--c-thai); font-size: 1.05rem; margin: 0; word-break: break-word; }
     .speak-btn {
       margin-top: 14px; display: inline-flex; align-items: center; gap: 6px;
-      background: #fff; color: var(--jade); border: 1px solid var(--jade);
+      background: #fff; color: var(--accent); border: 1px solid var(--accent);
       border-radius: 999px; padding: .4rem 1rem; font-weight: 500;
-      transition: background .2s, color .2s, transform .12s;
+      transition: background .2s, color .2s, border-color .2s, transform .12s;
     }
-    .speak-btn:hover { background: var(--jade); color: #fff; }
+    .speak-btn:hover { background: var(--accent); color: #fff; }
     .speak-btn:active { transform: scale(.96); }
-    .speak-btn:focus-visible { outline: 2px solid var(--jade); outline-offset: 2px; }
+    .speak-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     .speak-btn.big { padding: .6rem 1.5rem; font-size: 1.05rem; }
-    .speak-btn.playing { background: var(--jade); color: #fff; }
+    .speak-btn.playing { background: var(--accent); color: #fff; }
     .speak-btn.playing i { display: inline-block; animation: pulse .8s ease-in-out infinite; }
 
     .q-ask { font-weight: 700; margin: 18px 0 8px; }
@@ -263,7 +282,7 @@
       border: 1.5px solid var(--line); border-radius: 14px; padding: .8rem 1rem;
       transition: border-color .2s, background .2s, opacity .2s, transform .12s;
     }
-    .choice:hover:not(:disabled) { border-color: var(--jade); }
+    .choice:hover:not(:disabled) { border-color: var(--accent); }
     .choice:active:not(:disabled) { transform: scale(.985); }
     .choice:focus-visible { outline: 2px solid var(--jade); outline-offset: 2px; }
     .choice:disabled { color: var(--ink); cursor: default; }
@@ -301,7 +320,7 @@
       background: #fff; border: 1.5px solid var(--line); border-radius: 12px;
       transition: border-color .2s, background .2s, transform .12s, opacity .2s;
     }
-    .tile:hover:not(:disabled) { border-color: var(--jade); }
+    .tile:hover:not(:disabled) { border-color: var(--accent); }
     .tile:active:not(:disabled) { transform: scale(.93); }
     .tile:focus-visible { outline: 2px solid var(--jade); outline-offset: 2px; }
     .tile.placed { background: var(--paper); }
@@ -320,11 +339,11 @@
       border: 1.5px solid var(--line); border-radius: 14px; padding: .6rem .8rem;
       transition: border-color .2s, background .2s, transform .12s;
     }
-    .mcard:hover:not(:disabled) { border-color: var(--jade); }
+    .mcard:hover:not(:disabled) { border-color: var(--accent); }
     .mcard:active:not(:disabled) { transform: scale(.98); }
     .mcard:focus-visible { outline: 2px solid var(--jade); outline-offset: 2px; }
     .mcard:disabled { color: var(--ink); cursor: default; }
-    .mcard.sel { border-color: var(--jade); background: #E8F2EF; }
+    .mcard.sel { border-color: var(--accent); background: #F2EEFB; }
     .mcard.bad { border-color: var(--seal); background: #FBECEA; animation: shake .35s; }
     .mc-hanzi { font-family: 'Noto Serif SC', serif; font-size: 1.35rem; font-weight: 700; line-height: 1.3; word-break: break-word; color: var(--c-hanzi); }
     .mcard.is-sentence .mc-hanzi { font-size: 1.05rem; }
@@ -383,6 +402,7 @@
 
     /* ป๊อบอัพสรุปผล */
     .modal-content { border: 1px solid var(--line); border-radius: 16px; }
+    .modal-body { position: relative; overflow: hidden; }
     .modal-footer { border-top: 0; }
     .modal-title { font-weight: 700; font-size: 1.15rem; }
     .score { font-size: 2.6rem; font-weight: 700; line-height: 1.2; margin: 12px 0 0; }
@@ -752,6 +772,72 @@
         b.classList.remove('show'); void b.offsetWidth; b.classList.add('show');
       }
 
+      /* ---------- เสียงเอฟเฟกต์ประจำเกม (สังเคราะห์ด้วย Web Audio API ไม่ใช้ไฟล์เสียง) ---------- */
+      let actx = null;
+      function ac() {
+        if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+        if (actx.state === 'suspended') actx.resume();
+        return actx;
+      }
+      function tone(freq, start, dur, type, vol) {
+        try {
+          const c = ac(), t0 = c.currentTime + start;
+          const osc = c.createOscillator(), gain = c.createGain();
+          osc.type = type || 'sine';
+          osc.frequency.setValueAtTime(freq, t0);
+          gain.gain.setValueAtTime(0, t0);
+          gain.gain.linearRampToValueAtTime(vol || .16, t0 + .012);
+          gain.gain.exponentialRampToValueAtTime(.0001, t0 + dur);
+          osc.connect(gain); gain.connect(c.destination);
+          osc.start(t0); osc.stop(t0 + dur + .03);
+        } catch (e) {}
+      }
+      const seq = notes => notes.forEach(n => tone(n[0], n[1], n[2], n[3], n[4]));
+      // แต่ละเกมมีโทนเสียงของตัวเอง ให้รู้สึกแยกเกมกันได้แม้ไม่ได้มอง
+      const Sound = {
+        quizCorrect:    () => seq([[880, 0, .09, 'triangle', .16], [1175, .07, .14, 'triangle', .16]]),
+        quizWrong:      () => seq([[220, 0, .16, 'sawtooth', .11], [160, .08, .2, 'sawtooth', .11]]),
+        quizWin:        () => seq([[587, 0, .1, 'triangle', .15], [740, .09, .1, 'triangle', .15], [880, .18, .1, 'triangle', .15], [1175, .27, .22, 'triangle', .17]]),
+        matchTap:       () => tone(660, 0, .05, 'sine', .08),
+        matchCorrect:   () => seq([[784, 0, .09, 'sine', .14], [988, .07, .09, 'sine', .14], [1319, .14, .16, 'sine', .16]]),
+        matchWrong:     () => tone(200, 0, .18, 'sawtooth', .11),
+        matchWin:       () => seq([[523, 0, .1, 'triangle', .15], [659, .09, .1, 'triangle', .15], [784, .18, .1, 'triangle', .15], [1047, .27, .22, 'triangle', .17]]),
+        arrangeTap:     () => tone(440, 0, .045, 'square', .07),
+        arrangeDrop:    () => tone(330, 0, .05, 'square', .07),
+        arrangeCorrect: () => seq([[659, 0, .09, 'square', .13], [880, .08, .16, 'square', .13]]),
+        arrangeWrong:   () => tone(196, 0, .2, 'sawtooth', .11),
+        arrangeWin:     () => seq([[494, 0, .1, 'square', .14], [659, .09, .1, 'square', .14], [831, .18, .1, 'square', .14], [1109, .27, .22, 'square', .16]]),
+        flipOpen:       () => tone(740, 0, .05, 'triangle', .09),
+        flipCorrect:    () => seq([[988, 0, .09, 'sine', .15], [1319, .08, .18, 'sine', .15]]),
+        flipWrong:      () => tone(180, 0, .18, 'sawtooth', .11),
+        flipWin:        () => seq([[659, 0, .1, 'triangle', .14], [880, .09, .1, 'triangle', .14], [1109, .18, .24, 'triangle', .17]])
+      };
+
+      // สลับสีเอกลักษณ์ประจำเกม (คลาส theme-xxx บน body เปลี่ยนตัวแปร --accent)
+      function setTheme(id) {
+        document.body.className = document.body.className.replace(/\btheme-\S+\b/g, '').trim();
+        if (id) document.body.classList.add('theme-' + id);
+      }
+
+      // คอนเฟตติสั้นๆ ตอนจบเกม
+      function burstConfetti(container) {
+        if (!container || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        const colors = ['#D98E04', '#7C5CBF', '#1C86C9', '#E0556F', '#2F7D6D'];
+        for (let i = 0; i < 16; i++) {
+          const p = document.createElement('span');
+          p.className = 'confetti-piece';
+          p.style.left = (44 + Math.random() * 12) + '%';
+          p.style.top = '6px';
+          p.style.background = colors[i % colors.length];
+          p.style.animationDelay = (Math.random() * .15) + 's';
+          container.appendChild(p);
+          setTimeout(() => p.remove(), 1100);
+        }
+      }
+
+      // เด้งตัวเลขคะแนนตอนอัปเดต
+      function pop(el) { if (!el) return; el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+
       // ตัวช่วยของเกมเติมช่องว่าง: นับอักษรจีนในข้อความ
       const CJK_RE = /[\u4e00-\u9fff]/;
       const cjkChars = s => String(s || '').match(/[\u4e00-\u9fff]/g) || [];
@@ -840,6 +926,9 @@
           list.append(card);
         });
         resModal.show();
+        burstConfetti($('resSeal').parentElement);
+        const winSound = lastRun && { quiz: 'quizWin', match: 'matchWin', arrange: 'arrangeWin', flip: 'flipWin' }[lastRun.id];
+        if (winSound && Sound[winSound]) Sound[winSound]();
       }
 
       /* ===================== รายการเกม (เพิ่มเกมใหม่ตรงนี้) ===================== */
@@ -922,6 +1011,7 @@
 
       function goMenu() {
         stopAll();
+        setTheme(null);
         renderMenu();
         show('vMenu');
       }
@@ -963,6 +1053,7 @@
       function openSetup(id) {
         curGame = id;
         const g = GAMES[id];
+        setTheme(id);
         $('setGlyph').textContent = g.glyph;
         $('setTitle').textContent = g.title;
         $('setDesc').textContent = g.desc;
@@ -1028,6 +1119,7 @@
 
       function startQuiz(opts) {
         stopAll();
+        setTheme('quiz');
         D = loadData();
         const pool = poolFor(opts.scope);
         if (!pool.length || distinctOf(D.items) < 4) { openSetup('quiz'); return; }
@@ -1113,9 +1205,10 @@
         });
 
         g.answeredCount++;
-        if (ok) { g.correct++; g.left += QUIZ_BONUS_SEC * 1000; flashBonus('bonus', QUIZ_BONUS_SEC); updateTimeUI(); }
-        else g.wrongs.push(q.item);
+        if (ok) { g.correct++; g.left += QUIZ_BONUS_SEC * 1000; flashBonus('bonus', QUIZ_BONUS_SEC); updateTimeUI(); Sound.quizCorrect(); }
+        else { g.wrongs.push(q.item); Sound.quizWrong(); }
         $('hudScore').textContent = `ถูก ${g.correct}`;
+        pop($('hudScore'));
         $('fb').textContent = ok ? 'ถูกต้อง' : 'ผิด คำตอบที่ถูกคือ ' + q.answer;
 
         // ไปข้อต่อไปเอง (ไม่ต้องกดปุ่ม)
@@ -1185,6 +1278,7 @@
 
       function startMatch(opts) {
         stopAll();
+        setTheme('match');
         D = loadData();
         const pool = poolFor(opts.scope);
         const items = pickUnique(pool, opts.count);        // ความหมายไม่ซ้ำกัน กันจับคู่กำกวม
@@ -1270,6 +1364,7 @@
         if (g[k] === id) { g[k] = null; b.classList.remove('sel'); return; }            // แตะซ้ำ = ยกเลิกเลือก
         $('board').querySelectorAll(`.mcard[data-side="${side}"].sel`).forEach(x => x.classList.remove('sel'));
         g[k] = id; b.classList.add('sel');
+        Sound.matchTap();
         if (g.selL && g.selR) evaluatePair(g);
       });
 
@@ -1290,6 +1385,8 @@
           flashBonus('mBonus', MATCH_BONUS_SEC);
           updateMatchTime();
           updateMatchHud();
+          Sound.matchCorrect();
+          pop($('mStep'));
           const it = g.items.find(x => x.id === L);
           if (it) speak(it.hanzi);
           if (g.matched === g.items.length) {
@@ -1302,6 +1399,7 @@
           g.busy = true;
           bl.classList.add('bad'); br.classList.add('bad');
           updateMatchHud();
+          Sound.matchWrong();
           setTimeout(() => {
             [bl, br].forEach(c => c.classList.remove('bad', 'sel'));
             g.selL = g.selR = null;
@@ -1397,6 +1495,7 @@
 
       function startArrange(opts) {
         stopAll();
+        setTheme('arrange');
         D = loadData();
         const pool = poolFor(opts.scope);
         if (!arrangeEligible(pool).length) { openSetup('arrange'); return; }
@@ -1480,6 +1579,7 @@
         if (idx < 0) return;
         const [t] = g.tray.splice(idx, 1);
         g.placed.push(t);
+        Sound.arrangeDrop();
         drawBoard();
       }
       function removeTile(id) {
@@ -1488,6 +1588,7 @@
         if (idx < 0) return;
         const [t] = g.placed.splice(idx, 1);
         g.tray.push(t);
+        Sound.arrangeTap();
         drawBoard();
       }
 
@@ -1516,9 +1617,11 @@
         if (ok) {
           g.correct++;
           $('arFb').textContent = 'ถูกต้อง';
+          Sound.arrangeCorrect();
         } else {
           if (!g.wrongs.some(w => w.id === q.item.id)) g.wrongs.push(q.item);
           $('arFb').textContent = 'ยังไม่ถูก คำตอบที่ถูกคือ ' + q.chars.join(' ');
+          Sound.arrangeWrong();
           // โชว์คำตอบที่ถูกให้ดูด้วย (เรียงใหม่เป็นลำดับที่ถูกต้อง)
           ansBox.replaceChildren();
           q.tiles.slice().sort((a, b) => a.ci - b.ci).forEach(t => {
@@ -1529,6 +1632,7 @@
           });
         }
         $('arScore').textContent = `ถูก ${g.correct}`;
+        pop($('arScore'));
 
         setTimeout(() => {
           if (ag !== g || g.over) return;
@@ -1575,6 +1679,7 @@
 
       function startFlip(opts) {
         stopAll();
+        setTheme('flip');
         D = loadData();
         const pool = poolFor(opts.scope);
         const items = pickUnique(pool, opts.count);
@@ -1664,6 +1769,7 @@
         c.open = true;
         node.classList.add('flip');
         node.setAttribute('aria-label', `การ์ดใบที่ ${i + 1} ${cardText(c)}`);
+        Sound.flipOpen();
         g.picked.push(i);
         if (g.picked.length === 2) evaluateFlip(g);
       }
@@ -1695,6 +1801,8 @@
           flashBonus('fpBonus', FLIP_BONUS_SEC);
           updateFlipTime();
           updateFlipHud();
+          Sound.flipCorrect();
+          pop($('fpStep'));
           speak(ca.item.hanzi);
           if (g.matched === g.items.length) {
             g.finishing = true;                            // หยุดนับเวลาทันที แล้วรอให้เห็นการ์ดสุดท้ายก่อนขึ้นป๊อบอัพ
@@ -1705,6 +1813,7 @@
           g.wrongIds.add(ca.pid); g.wrongIds.add(cb.pid);  // นับความผิดพลาดให้ทั้งสองรายการที่เปิดผิด
           g.busy = true;
           updateFlipHud();
+          Sound.flipWrong();
           // ให้การ์ดหมุนเสร็จก่อน ค่อยขึ้นสีแดงและสั่น
           setTimeout(() => { if (fg === g) [na, nb].forEach(n => n.classList.add('bad')); }, 350);
           setTimeout(() => {
