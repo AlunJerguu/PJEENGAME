@@ -358,7 +358,6 @@
       border: 2px solid var(--jade); pointer-events: none;
       animation: ring .6s ease-out forwards;
     }
-    .mcard.gone { visibility: hidden; }
     @keyframes vanish {
       0%   { transform: scale(1);    opacity: 1; background: #E8F2EF; border-color: var(--jade); box-shadow: 0 0 0 0 rgba(47, 125, 109, .3); }
       30%  { transform: scale(1.06); opacity: 1; background: #E8F2EF; border-color: var(--jade); box-shadow: 0 0 0 5px rgba(47, 125, 109, .18); }
@@ -1368,6 +1367,29 @@
         if (g.selL && g.selR) evaluatePair(g);
       });
 
+      // การ์ดที่จับคู่ถูกหายไปจริงๆ (ไม่ใช่แค่ซ่อน) แล้วให้การ์ดที่เหลือในคอลัมน์เดียวกันเลื่อนเข้ามาแทนที่อย่างนุ่มนวล
+      function collapseCard(cardEl) {
+        const col = cardEl.parentElement;
+        if (!col) { cardEl.remove(); return; }
+        const siblings = [...col.children].filter(x => x !== cardEl);
+        if (reduce) { cardEl.remove(); return; }              // ปิดแอนิเมชันตามการตั้งค่าเครื่อง: เอาออกเฉยๆ
+        const before = new Map(siblings.map(s => [s, s.getBoundingClientRect()]));
+        cardEl.remove();
+        siblings.forEach(s => {
+          const prev = before.get(s);
+          const now = s.getBoundingClientRect();
+          const dy = prev.top - now.top;
+          if (Math.abs(dy) < .5) return;
+          s.style.transition = 'none';
+          s.style.transform = `translateY(${dy}px)`;
+          requestAnimationFrame(() => {
+            s.style.transition = 'transform .35s cubic-bezier(.4, 0, .2, 1)';
+            s.style.transform = '';
+          });
+          s.addEventListener('transitionend', () => { s.style.transition = ''; }, { once: true });
+        });
+      }
+
       function evaluatePair(g) {
         const L = g.selL, R = g.selR;
         const bl = cardOf('L', L), br = cardOf('R', R);
@@ -1377,7 +1399,7 @@
             c.classList.remove('sel');
             c.classList.add('matched');
             c.disabled = true;
-            c.addEventListener('animationend', ev => { if (ev.animationName === 'vanish') c.classList.add('gone'); });
+            c.addEventListener('animationend', ev => { if (ev.animationName === 'vanish') collapseCard(c); });
           });
           g.selL = g.selR = null;
           g.matched++;
