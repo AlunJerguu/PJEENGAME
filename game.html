@@ -218,6 +218,7 @@
     body.theme-match    { --accent: #7C5CBF; }  /* จับคู่: ม่วง */
     body.theme-arrange   { --accent: #1C86C9; }  /* เรียงประโยค: ฟ้า */
     body.theme-flip      { --accent: #E0556F; }  /* พลิกการ์ด: ชมพูอมแดง */
+    body.theme-speak     { --accent: #159895; }  /* ฝึกออกเสียง: เขียวอมฟ้า */
 
     /* แถบด้านบนระหว่างเล่น */
     .hud { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
@@ -430,6 +431,32 @@
       padding: 10px 14px; margin: 14px 0 0; font-size: .9rem; text-align: left;
     }
 
+    /* เกมฝึกออกเสียง */
+    .mic-wrap { text-align: center; margin: 18px 0; }
+    .mic-btn {
+      width: 86px; height: 86px; border-radius: 50%; border: 0;
+      background: var(--accent); color: #fff; font-size: 2rem;
+      display: inline-grid; place-items: center;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, .18);
+      transition: transform .12s, background .2s;
+    }
+    .mic-btn:active:not(:disabled) { transform: scale(.94); }
+    .mic-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .mic-btn.recording { background: var(--seal); animation: micPulse 1.1s ease-in-out infinite; }
+    .mic-btn:disabled { opacity: .45; }
+    @keyframes micPulse {
+      0%, 100% { box-shadow: 0 6px 18px rgba(200, 55, 45, .25), 0 0 0 0 rgba(200, 55, 45, .35); }
+      50%      { box-shadow: 0 6px 18px rgba(200, 55, 45, .25), 0 0 0 16px rgba(200, 55, 45, 0); }
+    }
+    .mic-hint { color: var(--muted); font-size: .9rem; margin: 12px 0 0; }
+    .score-box { text-align: center; }
+    .score-big { font-size: 3rem; font-weight: 700; line-height: 1; margin: 0; color: var(--jade); }
+    .score-big.mid { color: #B4530A; }
+    .score-big.low { color: var(--seal); }
+    .score-msg { font-weight: 500; margin: 6px 0 0; }
+    .score-heard { color: var(--muted); font-size: .9rem; margin: 6px 0 0; word-break: break-word; }
+    .score-heard b { color: var(--c-hanzi); font-family: 'Noto Serif SC', serif; }
+
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
     }
@@ -582,6 +609,41 @@
       <div class="pbar" role="progressbar" aria-label="ความคืบหน้า"><div class="pfill" id="fpFill"></div></div>
       <p class="q-ask mt-0">แตะการ์ดทีละ 2 ใบ หาอักษรจีนที่คู่กับความหมาย ต้องจำตำแหน่งให้ดี</p>
       <div class="fboard" id="fpBoard"></div>
+    </section>
+
+    <!-- ===== 8) เล่นเกม: ฝึกออกเสียง ===== -->
+    <section id="vSpeak" class="d-none">
+      <div class="hud">
+        <span class="hud-step" id="spStep"></span>
+        <span class="hud-timer" aria-label="เวลาที่ใช้"><i class="bi bi-stopwatch"></i><span id="spTime">0:00</span></span>
+        <span class="hud-score" id="spScore"></span>
+      </div>
+      <div class="pbar" role="progressbar" aria-label="ความคืบหน้า"><div class="pfill" id="spFill"></div></div>
+
+      <div id="spWrap">
+        <section class="card-box q-card">
+          <p class="q-label">อ่านออกเสียงตามนี้</p>
+          <p class="q-hanzi" id="spHanzi" lang="zh-CN"></p>
+          <p class="q-pinyin" id="spPinyin"></p>
+          <p class="q-thai" id="spThai"></p>
+          <p class="arrange-meaning" id="spMeaning"></p>
+        </section>
+
+        <div class="mic-wrap">
+          <button type="button" class="mic-btn" id="spMic" aria-label="กดค้างไว้แล้วพูดออกเสียง"><i class="bi bi-mic-fill"></i></button>
+          <p class="mic-hint" id="spHint">กดค้างไว้แล้วพูด ปล่อยเมื่อพูดจบ</p>
+        </div>
+
+        <section class="card-box score-box d-none" id="spResultBox">
+          <p class="score-big" id="spPct">0%</p>
+          <p class="score-msg" id="spMsg"></p>
+          <p class="score-heard" id="spHeard"></p>
+        </section>
+
+        <button type="button" class="btn-ghost w-100 justify-content-center mt-3" id="spSkip">ข้ามข้อนี้</button>
+      </div>
+
+      <div class="visually-hidden" id="spFb" role="status" aria-live="polite"></div>
     </section>
 
   </main>
@@ -809,7 +871,12 @@
         flipOpen:       () => tone(740, 0, .05, 'triangle', .09),
         flipCorrect:    () => seq([[988, 0, .09, 'sine', .15], [1319, .08, .18, 'sine', .15]]),
         flipWrong:      () => tone(180, 0, .18, 'sawtooth', .11),
-        flipWin:        () => seq([[659, 0, .1, 'triangle', .14], [880, .09, .1, 'triangle', .14], [1109, .18, .24, 'triangle', .17]])
+        flipWin:        () => seq([[659, 0, .1, 'triangle', .14], [880, .09, .1, 'triangle', .14], [1109, .18, .24, 'triangle', .17]]),
+        speakStart:     () => tone(900, 0, .05, 'sine', .07),
+        speakGood:      () => seq([[784, 0, .09, 'sine', .15], [1047, .08, .09, 'sine', .15], [1397, .16, .18, 'sine', .16]]),
+        speakMid:       () => tone(520, 0, .12, 'triangle', .1),
+        speakLow:       () => tone(196, 0, .18, 'sawtooth', .11),
+        speakWin:       () => seq([[587, 0, .1, 'sine', .14], [784, .09, .1, 'sine', .14], [988, .18, .1, 'sine', .14], [1319, .27, .22, 'sine', .17]])
       };
 
       // สลับสีเอกลักษณ์ประจำเกม (คลาส theme-xxx บน body เปลี่ยนตัวแปร --accent)
@@ -884,7 +951,7 @@
       }
 
       /* ===================== สลับหน้าจอ ===================== */
-      const VIEWS = ['vMenu', 'vSetup', 'vPlay', 'vMatch', 'vArrange', 'vFlip'];
+      const VIEWS = ['vMenu', 'vSetup', 'vPlay', 'vMatch', 'vArrange', 'vFlip', 'vSpeak'];
       const show = id => {
         VIEWS.forEach(v => $(v).classList.toggle('d-none', v !== id));
         window.scrollTo(0, 0);
@@ -926,7 +993,7 @@
         });
         resModal.show();
         burstConfetti($('resSeal').parentElement);
-        const winSound = lastRun && { quiz: 'quizWin', match: 'matchWin', arrange: 'arrangeWin', flip: 'flipWin' }[lastRun.id];
+        const winSound = lastRun && { quiz: 'quizWin', match: 'matchWin', arrange: 'arrangeWin', flip: 'flipWin', speak: 'speakWin' }[lastRun.id];
         if (winSound && Sound[winSound]) Sound[winSound]();
       }
 
@@ -986,6 +1053,22 @@
               : { text: `จะได้เล่น ${Math.min(count, u)} คู่ (${Math.min(count, u) * 2} ใบ) จากทั้งหมด ${u} รายการ ตำแหน่งสุ่มใหม่ทุกครั้ง\nเริ่มที่ ${FLIP_START_SEC} วินาที จับคู่ถูกได้เวลาเพิ่ม ${FLIP_BONUS_SEC} วินาที`, ok: true };
           },
           start: opts => startFlip(opts)
+        },
+        speak: {
+          glyph: '说', title: 'ฝึกออกเสียง',
+          desc: 'ดูอักษรจีน พินอิน คำอ่านไทย และความหมายครบ แล้วกดไมค์ค้างพูดออกเสียงให้ตรง ให้คะแนนตามความแม่นยำ พูดใหม่ได้เรื่อยๆ จนกว่าจะได้ 100 คะแนน',
+          countLabel: 'จำนวนข้อ', unit: 'ข้อ', counts: [5, 10, 15], defCount: 10,
+          minDistinct: 1,
+          ready: d => d.items.some(it => it.hanzi && it.hanzi.trim()),
+          need: n => `ต้องมีคำศัพท์หรือประโยคอย่างน้อย 1 รายการ ตอนนี้มี ${n} รายการ`,
+          info: (pool, count) => {
+            if (!canRecognize) return { text: 'เบราว์เซอร์นี้ไม่รองรับการแปลงเสียงพูดเป็นข้อความ ลองเปิดด้วย Chrome บนคอมพิวเตอร์หรือ Android (ยังไม่รองรับบน iOS ทุกเบราว์เซอร์)', ok: false };
+            const e = pool.filter(it => it.hanzi && it.hanzi.trim()).length;
+            return e === 0
+              ? { text: 'ชุดนี้ไม่มีคำหรือประโยคให้ฝึกออกเสียง ลองเลือกชุดอื่น', ok: false }
+              : { text: `จะได้เล่น ${Math.min(count, e)} ข้อ จากทั้งหมด ${e} รายการ\nต้องอนุญาตให้เว็บนี้ใช้ไมโครโฟน และต้องต่ออินเทอร์เน็ตระหว่างเล่น (การแปลงเสียงพูดทำงานผ่านเซิร์ฟเวอร์ของเบราว์เซอร์)\nคะแนนวัดจากสิ่งที่ระบบ "ได้ยิน" ตรงกับคำถามแค่ไหน ไม่ใช่การตรวจวรรณยุกต์หรือสำเนียงโดยตรง`, ok: true };
+          },
+          start: opts => startSpeak(opts)
         }
       };
       let curGame = null;              // เกมที่กำลังดูหน้าตั้งค่า
@@ -1079,16 +1162,19 @@
       $('startBtn').addEventListener('click', () => GAMES[curGame].start({ scope: $('scope').value, count: chosenCount() }));
 
       /* ===================== หยุดตัวจับเวลา/เสียงทั้งหมด ===================== */
-      let quizTimer = null, matchTimer = null, arrangeTimer = null, flipTimer = null;
+      let quizTimer = null, matchTimer = null, arrangeTimer = null, flipTimer = null, speakTimer = null;
       function stopAll() {
         clearInterval(quizTimer);    quizTimer = null;
         clearInterval(matchTimer);   matchTimer = null;
         clearInterval(arrangeTimer); arrangeTimer = null;
         clearInterval(flipTimer);    flipTimer = null;
+        clearInterval(speakTimer);   speakTimer = null;
         if (game) game.over = true;
         if (mg) mg.over = true;
         if (ag) ag.over = true;
         if (fg) fg.over = true;
+        if (sg) sg.over = true;
+        stopRecognition();
         if (canSpeak) speechSynthesis.cancel();
       }
 
@@ -1882,6 +1968,201 @@
             : (m === 0 ? 'จำแม่นมาก ไม่พลาดเลย' : `พลาด ${m} ครั้ง ` + (m <= 3 ? 'เก่งมาก' : m <= 8 ? 'ดีแล้ว ทบทวนอีกนิดจะแม่นขึ้น' : 'ลองอีกรอบ จะจำตำแหน่งได้ดีขึ้น')),
           time: 'ใช้เวลา ' + fmtTime(durationSec),
           saved, wrongs, wrongLabel: 'คำที่จำผิด'
+        });
+      }
+
+      /* =====================================================
+         เกม: ฝึกออกเสียง
+         โชว์อักษรจีน พินอิน คำอ่านไทย และความหมายครบ (ไม่ซ่อน) ผู้เล่นกดไมค์ค้างแล้วพูดตาม
+         ใช้ Web Speech API (SpeechRecognition) แปลงเสียงเป็นข้อความ แล้วเทียบกับคำถามให้คะแนน 0-100
+         พูดใหม่ได้เรื่อยๆ จนกว่าจะได้ 100 คะแนน ถึงจะไปข้อถัดไป (หรือกด "ข้ามข้อนี้" ได้ถ้าติดขัด)
+         ===================================================== */
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const canRecognize = !!SpeechRec;
+
+      // ระยะห่างระหว่างข้อความ 2 ชุด (Levenshtein) ใช้เทียบสิ่งที่ "ได้ยิน" กับคำถาม
+      function levenshtein(a, b) {
+        const m = a.length, n = b.length;
+        if (!m) return n;
+        if (!n) return m;
+        const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+        for (let i = 0; i <= m; i++) dp[i][0] = i;
+        for (let j = 0; j <= n; j++) dp[0][j] = j;
+        for (let i = 1; i <= m; i++) {
+          for (let j = 1; j <= n; j++) {
+            dp[i][j] = a[i - 1] === b[j - 1] ? dp[i - 1][j - 1] : 1 + Math.min(dp[i - 1][j - 1], dp[i - 1][j], dp[i][j - 1]);
+          }
+        }
+        return dp[m][n];
+      }
+      // คะแนน 0-100: เทียบเฉพาะตัวอักษรจีนที่ระบบได้ยิน กับตัวอักษรจีนของคำถาม (ไม่ใช่การตรวจวรรณยุกต์/สำเนียงจริง)
+      function scorePronunciation(target, heard) {
+        const t = cjkChars(target), h = cjkChars(heard);
+        if (!t.length) return 0;
+        const dist = levenshtein(t, h);
+        return Math.max(0, Math.round(100 * (1 - dist / Math.max(t.length, h.length, 1))));
+      }
+
+      let sg = null;
+      let curRecog = null;
+      function stopRecognition() {
+        if (curRecog) {
+          try { curRecog.onresult = null; curRecog.onerror = null; curRecog.onend = null; curRecog.stop(); } catch (e) {}
+          curRecog = null;
+        }
+        $('spMic').classList.remove('recording');
+      }
+
+      function startSpeak(opts) {
+        stopAll();
+        D = loadData();
+        const pool = poolFor(opts.scope).filter(it => it.hanzi && it.hanzi.trim());
+        if (!canRecognize || !pool.length) { openSetup('speak'); return; }
+        const qs = shuffle(pool.slice()).slice(0, opts.count);
+        lastRun = { id: 'speak', opts };
+        setTheme('speak');
+        sg = { opts, qs, i: 0, correct: 0, wrongs: [], over: false, t0: Date.now() };
+        show('vSpeak');
+        renderSp();
+        $('spTime').textContent = '0:00';
+        speakTimer = setInterval(() => { if (sg && !sg.over) $('spTime').textContent = fmtClock(Date.now() - sg.t0); }, 250);
+      }
+
+      function renderSp() {
+        const g = sg, q = g.qs[g.i], total = g.qs.length;
+
+        $('spStep').textContent = `ข้อ ${g.i + 1} / ${total}`;
+        $('spScore').textContent = `ถูก ${g.correct}`;
+        $('spFill').style.width = (g.i / total * 100) + '%';
+
+        const h = $('spHanzi');
+        h.textContent = q.hanzi;
+        h.classList.toggle('is-sentence', typeOf(q) === 'sentence');
+        $('spPinyin').textContent = q.pinyin || '';
+        $('spThai').textContent = q.thaiReading || '';
+        $('spMeaning').textContent = q.meaning ? ('ความหมาย: ' + q.meaning) : '';
+
+        $('spResultBox').classList.add('d-none');
+        $('spHeard').replaceChildren();
+        $('spHint').textContent = 'กดค้างไว้แล้วพูด ปล่อยเมื่อพูดจบ';
+        $('spFb').textContent = '';
+        $('spMic').disabled = false;
+
+        const w = $('spWrap');
+        w.classList.remove('enter'); void w.offsetWidth; w.classList.add('enter');
+      }
+
+      function beginListening() {
+        if (!sg || sg.over || !canRecognize || curRecog) return;
+        speechSynthesis.cancel();                       // กันเสียงอ่านตัวอย่างค้างซ้อนกับไมค์
+        let rec;
+        try { rec = new SpeechRec(); } catch (e) { return; }
+        rec.lang = 'zh-CN'; rec.interimResults = false; rec.maxAlternatives = 1; rec.continuous = false;
+        curRecog = rec;
+        $('spMic').classList.add('recording');
+        $('spHint').textContent = 'กำลังฟัง... พูดได้เลย';
+        Sound.speakStart();
+
+        rec.onresult = ev => {
+          const heard = (ev.results[0] && ev.results[0][0] && ev.results[0][0].transcript) || '';
+          curRecog = null;
+          $('spMic').classList.remove('recording');
+          handleHeard(heard);
+        };
+        rec.onerror = ev => {
+          curRecog = null;
+          $('spMic').classList.remove('recording');
+          $('spHint').textContent =
+            (ev.error === 'not-allowed' || ev.error === 'service-not-allowed') ? 'ไม่ได้รับอนุญาตให้ใช้ไมโครโฟน กรุณาอนุญาตแล้วลองใหม่'
+            : ev.error === 'no-speech' ? 'ไม่ได้ยินเสียงพูด ลองพูดอีกครั้ง'
+            : ev.error === 'network' ? 'มีปัญหาการเชื่อมต่อเครือข่าย การแปลงเสียงพูดต้องใช้อินเทอร์เน็ต'
+            : 'เกิดข้อผิดพลาด ลองใหม่อีกครั้ง';
+        };
+        rec.onend = () => { curRecog = null; $('spMic').classList.remove('recording'); };
+
+        try { rec.start(); } catch (e) { curRecog = null; $('spMic').classList.remove('recording'); }
+      }
+
+      // กดค้างเพื่อพูด: เริ่มฟังตอนกดลง หยุดฟังตอนปล่อยนิ้ว
+      $('spMic').addEventListener('pointerdown', e => { e.preventDefault(); beginListening(); });
+      ['pointerup', 'pointercancel', 'pointerleave'].forEach(evName => $('spMic').addEventListener(evName, () => {
+        if (curRecog) { try { curRecog.stop(); } catch (e) {} }
+      }));
+
+      function handleHeard(heard) {
+        const g = sg;
+        if (!g || g.over) return;
+        const q = g.qs[g.i];
+        const score = scorePronunciation(q.hanzi, heard);
+
+        $('spResultBox').classList.remove('d-none');
+        const pctEl = $('spPct');
+        pctEl.textContent = score + '%';
+        pctEl.className = 'score-big' + (score >= 100 ? '' : score >= 60 ? ' mid' : ' low');
+        pop(pctEl);
+
+        const heardLine = $('spHeard');
+        heardLine.replaceChildren(document.createTextNode('ได้ยินว่า: '));
+        const b = el('b', '', heard || '(ไม่ได้ยินข้อความ)'); b.lang = 'zh-CN';
+        heardLine.append(b);
+
+        if (score >= 100) {
+          $('spMsg').textContent = 'เป๊ะเลย เก่งมาก';
+          $('spFb').textContent = 'ถูกต้อง';
+          $('spHint').textContent = 'ถูกต้อง กำลังไปข้อถัดไป...';
+          $('spMic').disabled = true;
+          Sound.speakGood();
+          g.correct++;
+          $('spScore').textContent = `ถูก ${g.correct}`;
+          setTimeout(() => {
+            if (sg !== g || g.over) return;
+            g.i++;
+            if (g.i >= g.qs.length) finishSpeak(); else renderSp();
+          }, 900);
+        } else {
+          const msg = score >= 60 ? 'ใกล้แล้ว ลองออกเสียงใหม่อีกครั้ง' : 'ยังไม่ตรง ลองออกเสียงใหม่';
+          $('spMsg').textContent = msg;
+          $('spFb').textContent = msg;
+          $('spHint').textContent = 'กดค้างไว้แล้วพูด "ออกเสียงใหม่"';
+          Sound[score >= 60 ? 'speakMid' : 'speakLow']();
+        }
+      }
+
+      $('spSkip').addEventListener('click', () => {
+        const g = sg;
+        if (!g || g.over) return;
+        stopRecognition();
+        const q = g.qs[g.i];
+        if (!g.wrongs.some(w => w.id === q.id)) g.wrongs.push(q);
+        g.i++;
+        if (g.i >= g.qs.length) finishSpeak(); else renderSp();
+      });
+
+      function finishSpeak() {
+        const g = sg;
+        if (!g || g.over) return;
+        g.over = true;
+        clearInterval(speakTimer); speakTimer = null;
+
+        const total = g.qs.length, correct = g.correct;
+        const durationSec = Math.max(1, Math.round((Date.now() - g.t0) / 1000));
+        const pct = Math.round(correct / total * 100);
+
+        const saved = saveHistory({
+          mode: 'speak',
+          total, correct, wrong: total - correct,
+          durationSec,
+          wrongItemIds: g.wrongs.map(i => i.id)
+        });
+
+        $('spFill').style.width = '100%';
+        showResult({
+          title: 'จบเกมแล้ว',
+          glyph: '说',
+          main: correct, sub: `/ ${total}`,
+          msg: `${pct}%  ` + gradeText(pct),
+          time: 'ใช้เวลา ' + fmtTime(durationSec),
+          saved, wrongs: g.wrongs, wrongLabel: 'คำที่ยังไม่ถึง 100 คะแนน (ข้ามไป)'
         });
       }
 
