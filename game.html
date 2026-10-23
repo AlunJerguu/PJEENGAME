@@ -630,8 +630,8 @@
         </section>
 
         <div class="mic-wrap">
-          <button type="button" class="mic-btn" id="spMic" aria-label="กดค้างไว้แล้วพูดออกเสียง"><i class="bi bi-mic-fill"></i></button>
-          <p class="mic-hint" id="spHint">กดค้างไว้แล้วพูด ปล่อยเมื่อพูดจบ</p>
+          <button type="button" class="mic-btn" id="spMic" aria-label="กดเพื่อเริ่มพูด กดอีกครั้งเพื่อหยุด"><i class="bi bi-mic-fill"></i></button>
+          <p class="mic-hint" id="spHint">กดหนึ่งครั้งเพื่อเริ่มพูด แล้วกดอีกครั้งเมื่อพูดจบ</p>
         </div>
 
         <section class="card-box score-box d-none" id="spResultBox">
@@ -2044,7 +2044,7 @@
 
         $('spResultBox').classList.add('d-none');
         $('spHeard').replaceChildren();
-        $('spHint').textContent = 'กดค้างไว้แล้วพูด ปล่อยเมื่อพูดจบ';
+        $('spHint').textContent = 'กดหนึ่งครั้งเพื่อเริ่มพูด แล้วกดอีกครั้งเมื่อพูดจบ';
         $('spFb').textContent = '';
         $('spMic').disabled = false;
 
@@ -2083,11 +2083,11 @@
         try { rec.start(); } catch (e) { curRecog = null; $('spMic').classList.remove('recording'); }
       }
 
-      // กดค้างเพื่อพูด: เริ่มฟังตอนกดลง หยุดฟังตอนปล่อยนิ้ว
-      $('spMic').addEventListener('pointerdown', e => { e.preventDefault(); beginListening(); });
-      ['pointerup', 'pointercancel', 'pointerleave'].forEach(evName => $('spMic').addEventListener(evName, () => {
-        if (curRecog) { try { curRecog.stop(); } catch (e) {} }
-      }));
+      // กดครั้งเดียวเพื่อเริ่มพูด กดอีกครั้งเพื่อหยุด (ไม่ต้องกดค้าง)
+      $('spMic').addEventListener('click', () => {
+        if (curRecog) { try { curRecog.stop(); } catch (e) {} }   // กำลังฟังอยู่ -> กดอีกครั้งเพื่อหยุดและเฉลยคะแนน
+        else beginListening();                                     // ยังไม่ได้เริ่ม -> กดเพื่อเริ่มพูด
+      });
 
       function handleHeard(heard) {
         const g = sg;
@@ -2123,7 +2123,7 @@
           const msg = score >= 60 ? 'ใกล้แล้ว ลองออกเสียงใหม่อีกครั้ง' : 'ยังไม่ตรง ลองออกเสียงใหม่';
           $('spMsg').textContent = msg;
           $('spFb').textContent = msg;
-          $('spHint').textContent = 'กดค้างไว้แล้วพูด "ออกเสียงใหม่"';
+          $('spHint').textContent = 'กดไมค์อีกครั้งเพื่อ "ออกเสียงใหม่"';
           Sound[score >= 60 ? 'speakMid' : 'speakLow']();
         }
       }
