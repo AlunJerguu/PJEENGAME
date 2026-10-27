@@ -258,6 +258,31 @@
     .icon-btn:active { transform: scale(.9); }
     .icon-btn:focus-visible { outline: 2px solid var(--jade); outline-offset: 1px; }
 
+    /* ตารางรายการคำศัพท์ */
+    .table-wrap { background: var(--card); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+    .word-table { width: 100%; border-collapse: collapse; }
+    .word-table thead th {
+      position: sticky; top: 0; background: var(--paper); color: var(--muted);
+      font-size: .78rem; font-weight: 600; text-align: left; white-space: nowrap;
+      padding: 10px 10px; border-bottom: 1px solid var(--line);
+    }
+    .word-table td { padding: 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+    .word-table tbody tr:last-child td { border-bottom: 0; }
+    .word-table tbody tr:hover { background: var(--paper); }
+    .wt-num { color: var(--muted); font-size: .85rem; width: 1%; text-align: right; }
+    .wt-hanzi { font-family: 'Noto Serif SC', serif; font-size: 1.4rem; font-weight: 700; color: var(--c-hanzi); white-space: nowrap; }
+    .wt-pinyin { color: var(--c-pinyin); font-weight: 500; white-space: nowrap; }
+    .wt-thai   { color: var(--c-thai); white-space: nowrap; }
+    .wt-mean   { color: var(--c-mean); font-weight: 500; min-width: 7em; }
+    .wt-set    { color: var(--muted); font-size: .85rem; white-space: nowrap; }
+    .wt-actions { display: flex; gap: 0; white-space: nowrap; }
+    @media (max-width: 480px) {
+      .word-table { font-size: .92rem; }
+      .word-table td, .word-table thead th { padding: 8px 6px; }
+      .wt-hanzi { font-size: 1.2rem; }
+      .icon-btn { width: 32px; height: 32px; font-size: 1rem; }
+    }
+
     /* หน้าว่าง */
     .empty-box { text-align: center; padding: 28px 16px; border-style: dashed; }
     .empty-box i { font-size: 1.8rem; color: var(--jade); }
@@ -748,6 +773,47 @@
         return art;
       }
 
+      /* ----- ตารางรายการคำศัพท์ (แบบตารางคอลัมน์ # / คำจีน / Pinyin / คำอ่านไทย / ความหมาย) ----- */
+      function wordRow(it, idx, setLabel) {
+        const tr = el('tr');
+        tr.dataset.id = it.id;
+        tr.append(el('td', 'wt-num', String(idx)));
+        const h = el('td', 'wt-hanzi hanzi', it.hanzi); h.lang = 'zh-CN';
+        tr.append(h);
+        tr.append(el('td', 'wt-pinyin', it.pinyin || ''));
+        tr.append(el('td', 'wt-thai', it.thaiReading || ''));
+        tr.append(el('td', 'wt-mean', it.meaning || ''));
+        if (setLabel != null) tr.append(el('td', 'wt-set', setLabel));
+
+        const actTd = el('td', 'wt-actions');
+        const mk = (act, icon, label) => {
+          const b = el('button', 'icon-btn');
+          b.type = 'button'; b.dataset.act = act; b.setAttribute('aria-label', label);
+          b.innerHTML = `<i class="bi ${icon}"></i>`;
+          return b;
+        };
+        if (canSpeak) actTd.append(mk('speak', 'bi-volume-up', 'ฟังเสียง'));
+        actTd.append(mk('edit', 'bi-pencil', 'แก้ไข'), mk('del', 'bi-trash3', 'ลบ'));
+        tr.append(actTd);
+        return tr;
+      }
+
+      function itemsTable(rows, withSet) {
+        const wrap = el('div', 'table-wrap');
+        const table = el('table', 'word-table');
+        const thead = el('thead'), trh = el('tr');
+        const heads = ['#', 'คำจีน', 'Pinyin', 'คำอ่านไทย', 'ความหมาย'];
+        if (withSet) heads.push('ชุด');
+        heads.push('');
+        heads.forEach(t => trh.append(el('th', '', t)));
+        thead.append(trh);
+        const tbody = el('tbody');
+        rows.forEach((r, i) => tbody.append(wordRow(r.it, i + 1, withSet ? r.setLabel : null)));
+        table.append(thead, tbody);
+        wrap.append(table);
+        return wrap;
+      }
+
       /* ----- เนื้อหาหน้าอ่านเรื่อง (คืนเป็นหลายการ์ด) ----- */
       // ตัดข้อความเป็นช่วงๆ ตามเครื่องหมายวรรคตอน (เก็บเครื่องหมายไว้ท้ายช่วงเดิม) ไว้ใช้จับคู่ไฮไลต์
       function splitSegs(text, punctClass) {
@@ -926,7 +992,7 @@
           $('dtTitle').textContent = setMatch.name;
           $('renameBtn').classList.toggle('d-none', !setMatch.real);
           const list = setMatch.items.filter(i => (state.type === 'all' || i.type === state.type) && matchQ(i));
-          nodes = list.map(i => itemCard(i, null));
+          nodes = list.length ? [itemsTable(list.map(it => ({ it })), false)] : [];
           const filtered = q || state.type !== 'all';
           $('dtSub').textContent = filtered ? `แสดง ${list.length} จาก ${setMatch.items.length} รายการ` : `${setMatch.items.length} รายการ`;
         } else if (route.mode === 'story') {
@@ -941,8 +1007,10 @@
           $('ovSub').textContent = totalStories === 0 ? '' : (q ? `พบ ${list.length} จาก ${totalStories} เรื่อง` : `${totalStories} เรื่อง`);
         } else if (q) {
           // ----- มุมมองรวม: ค้นหาข้ามทุกชุดคำศัพท์ -----
-          groups.forEach(g => g.items.forEach(i => { if (matchQ(i, g.name)) nodes.push(itemCard(i, g.name)); }));
-          $('ovSub').textContent = `พบ ${nodes.length} รายการ`;
+          const srows = [];
+          groups.forEach(g => g.items.forEach(i => { if (matchQ(i, g.name)) srows.push({ it: i, setLabel: g.name }); }));
+          if (srows.length) nodes.push(itemsTable(srows, true));
+          $('ovSub').textContent = `พบ ${srows.length} รายการ`;
         } else {
           // ----- มุมมองรวม: ชุดคำศัพท์ -----
           nodes = groups.map(setCard);
