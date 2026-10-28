@@ -259,8 +259,9 @@
     .icon-btn:focus-visible { outline: 2px solid var(--jade); outline-offset: 1px; }
 
     /* ตารางรายการคำศัพท์ */
-    .table-wrap { background: var(--card); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
-    .word-table { width: 100%; border-collapse: collapse; }
+    .table-wrap { background: var(--card); border: 1px solid var(--line); border-radius: 16px; overflow: auto; -webkit-overflow-scrolling: touch; }
+    .scroll-hint { color: var(--muted); font-size: .8rem; margin: 0 0 6px; text-align: right; }
+    .word-table { width: 100%; min-width: 640px; border-collapse: collapse; }
     .word-table thead th {
       position: sticky; top: 0; background: var(--paper); color: var(--muted);
       font-size: .78rem; font-weight: 600; text-align: left; white-space: nowrap;
@@ -799,6 +800,7 @@
       }
 
       function itemsTable(rows, withSet) {
+        const hint = el('p', 'scroll-hint', 'เลื่อนซ้าย-ขวาเพื่อดูคอลัมน์ที่เหลือ ⇆');
         const wrap = el('div', 'table-wrap');
         const table = el('table', 'word-table');
         const thead = el('thead'), trh = el('tr');
@@ -811,7 +813,9 @@
         rows.forEach((r, i) => tbody.append(wordRow(r.it, i + 1, withSet ? r.setLabel : null)));
         table.append(thead, tbody);
         wrap.append(table);
-        return wrap;
+        const box = el('div');
+        box.append(hint, wrap);
+        return box;
       }
 
       /* ----- เนื้อหาหน้าอ่านเรื่อง (คืนเป็นหลายการ์ด) ----- */
